@@ -1,0 +1,108 @@
+name: flutter_application
+description: "A new Flutter project."
+
+publish_to: 'none' 
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+# -------------Packages-------------
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Utility packages
+  intl: ^0.19.0 # date format
+  http: ^1.1.0
+  logger: ^2.0.1
+  url_launcher: ^6.1.12
+  flutter_native_splash: ^2.4.0
+  connectivity_plus: ^6.0.3
+
+  # Icons
+  iconsax: ^0.0.8
+  cupertino_icons: ^1.0.6
+  flutter_svg: ^2.0.5
+
+  # Fonts
+  google_fonts: ^6.2.1
+
+  # State management
+  get: ^4.6.5
+  get_storage: ^2.1.1
+
+  # Product specific
+  calendar_date_picker2: ^1.0.3
+  multi_select_flutter: ^4.1.3
+  flutter_spinkit: ^5.2.1
+  animated_rating_stars: ^1.0.1
+
+  # Firebase connection
+  firebase_core: ^3.0.0
+  cloud_firestore: ^5.0.0
+  firebase_auth: ^5.1.0
+  firebase_storage: ^12.0.1
+
+  # Maps
+  google_maps_flutter: ^2.7.0
+
+  # Launch external app
+  external_app_launcher: ^4.0.0
+
+# -------------Others-------------
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+# -------------Local Assets-------------
+  assets:
+    - assets/logos/
+    - assets/icons/
+    - assets/images/
+    - assets/images/bkg1.png
+    - assets/images/bkg1.png
+    - assets/images/bkg2.png
+    - assets/images/bkg3.png
+    - assets/images/bkg4.png
+    - assets/images/bkg5.png
+    - assets/images/banner1.png
+    - assets/images/banner2.png
+    - assets/images/banner3.png
+    - assets/images/banner4.png
+    - assets/images/specialist1.jpg
+    - assets/images/specialist2.jpg
+    - assets/images/specialist3.jpg
+    - assets/images/product.png
+    - assets/images/SplashScreen.png
+    - assets/images/e-wallet.png
+    - assets/logos/LogoBig.svg
+    - assets/logos/LogoMedium.svg
+    - assets/logos/LogoSmall.svg
+    - assets/logos/LogoPattern.svg
+    - assets/icons/AchievementDone.svg
+    - assets/icons/AchievementNotDone.svg
+    - assets/icons/CategoryBody.svg
+    - assets/icons/CategoryHaircare.svg
+    - assets/icons/CategoryPerfume.svg
+    - assets/icons/CategorySkincare.svg
+    - assets/icons/gift1_girl.svg
+    - assets/icons/gift1_woman.svg
+    - assets/icons/gift1_old_woman.svg
+    - assets/icons/gift2_boy.svg
+    - assets/icons/gift2_man.svg
+    - assets/icons/gift2_old_man.svg
+    - assets/icons/MedalBronze.svg
+    - assets/icons/MedalSilver.svg
+    - assets/icons/MedalGold.svg
+    - assets/icons/MedalNotDone.svg
+
+
+
+
