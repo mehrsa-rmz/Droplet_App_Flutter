@@ -25,7 +25,7 @@ class LoginController extends GetxController {
   /// -- Email and Password SignIn
   Future<void> login() async {
     try {
-      /// -- Email and Password SignIn
+      // Start Loading
       TFullScreenLoader.openLoadingDialog('Logging you in...');
 
       // Check Internet Connectivity

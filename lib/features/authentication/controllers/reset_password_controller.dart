@@ -18,7 +18,8 @@ class ResetController extends GetxController {
     email.dispose();
     super.onClose();
   }
-
+  
+  /// Send Reset Password EMail
   Future<void> sendPasswordResetEmail() async {
     try {
       // Start Loading
