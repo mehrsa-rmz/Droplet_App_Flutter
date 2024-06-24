@@ -11,37 +11,40 @@ import 'package:get/get.dart';
 class SignupController extends GetxController {
   static SignupController get instance => Get.find();
 
-  // Variables
   final email = TextEditingController();
   final firstName = TextEditingController();
   final lastName = TextEditingController();
   final password = TextEditingController();
   final repeatPassword = TextEditingController();
-  GlobalKey<FormState>  signupFormKey = GlobalKey<FormState>();
+  GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
 
-  // Update current index and jump to nextPage
+  @override
+  void onClose() {
+    email.dispose();
+    firstName.dispose();
+    lastName.dispose();
+    password.dispose();
+    repeatPassword.dispose();
+    super.onClose();
+  }
+
   Future<void> signup() async {
-    try{
-      // Start Loading
+    try {
       TFullScreenLoader.openLoadingDialog('We are processing your information...');
 
-      // Check Internet Connectivity
       final isConnected = await NetworkManager.instance.isConnected();
       if (!isConnected) {
         TFullScreenLoader.stopLoading();
         return;
       }
 
-      // Form Validation
       if (!signupFormKey.currentState!.validate()) {
         TFullScreenLoader.stopLoading();
         return;
       }
 
-      // Register user in Firebase Authentication & save user data in Firebase
       await AuthenticationRepository.instance.registerWithEmailAndPassword(email.text.trim(), password.text.trim());
 
-      // Save authenticated user data in Firebase Firestore
       final newUser = UserModel(
         id: AuthenticationRepository.instance.getUserID,
         email: email.text.trim(),
@@ -55,13 +58,10 @@ class SignupController extends GetxController {
 
       await UserController.instance.saveUserRecord(user: newUser);
 
-      // Remove Loader
       TFullScreenLoader.stopLoading();
 
-      // Success message
       Get.to(() => const SignupSuccessScreen());
-    }catch (e) {
-      // Show some Generic Error to the user
+    } catch (e) {
       TFullScreenLoader.stopLoading();
       TLoaders.errorSnackBar(title: 'An error occured', message: e.toString());
     }

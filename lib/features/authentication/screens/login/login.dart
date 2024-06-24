@@ -16,7 +16,7 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(LoginController());
+    final controller = Get.put(LoginController(), permanent: true);
     return Scaffold(
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -85,7 +85,7 @@ class LoginScreen extends StatelessWidget {
                           text: 'Sign up',
                           color: blue7,
                           type: 'secondary',
-                          onPressed: () => Get.to(() => const SignupScreen()),
+                          onPressed: () => Get.off(() => const SignupScreen()),
                         ),
                         const SizedBox(height: 12),
                         ButtonType(

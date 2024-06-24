@@ -20,6 +20,7 @@ class ExploreScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Building ExploreScreen, isLogged: $isLogged');
     return Scaffold(
         bottomNavigationBar: const BottomNavBar(selectedOption: 'explore',),
         body: Container(
@@ -49,8 +50,7 @@ class ExploreScreen extends StatelessWidget {
                                 color: Color(0x59223944),
                                 spreadRadius: 0,
                                 blurRadius: 30,
-                                offset: Offset(
-                                    0, 8),
+                                offset: Offset(0, 8),
                               )
                             ],
                           ),
@@ -86,8 +86,7 @@ class ExploreScreen extends StatelessWidget {
                                 color: Color(0x59223944),
                                 spreadRadius: 0,
                                 blurRadius: 30,
-                                offset: Offset(
-                                    0, 8),
+                                offset: Offset(0, 8),
                               )
                             ],
                           ),
