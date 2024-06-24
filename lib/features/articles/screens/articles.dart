@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/features/articles/screens/opened_article.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
 import 'package:flutter_application/utils/constants/text_styles.dart';
@@ -17,11 +18,11 @@ class ArticlesScreen extends StatefulWidget {
 class _ArticlesScreenState extends State<ArticlesScreen> {
   final TextEditingController _searchController = TextEditingController();
   final List<Map<String, dynamic>> _articles = [
-    {'id': 1, 'title': 'Thinning hair', 'color': pink6}, 
-    {'id': 2, 'title': 'Sensitive skin', 'color': red6},          
-    {'id': 3, 'title': 'New Mothers', 'color': blue7},            
-    {'id': 4, 'title': 'Acne scars', 'color': pink6},             
-    {'id': 5, 'title': 'About SPF', 'color': red6},               
+    {'id': 1, 'title': 'Thinning hair', 'color': pink6},
+    {'id': 2, 'title': 'Sensitive skin', 'color': red6},
+    {'id': 3, 'title': 'New Mothers', 'color': blue7},
+    {'id': 4, 'title': 'Acne scars', 'color': pink6},
+    {'id': 5, 'title': 'About SPF', 'color': red6},
     {'id': 6, 'title': 'Getting rid of Dandruff', 'color': blue7},
   ];
   late List<Map<String, dynamic>> _filteredArticles;
@@ -177,7 +178,8 @@ class ArticleButton extends StatelessWidget {
               Icon(CupertinoIcons.chevron_right, color: color, size: 24)
             ],
           ),
-          onPressed: () => Get.toNamed('/articles/$id')),
+          onPressed:  () => Get.to(() => OpenedArticleScreen(id: id)),
+      )
     );
   }
 }

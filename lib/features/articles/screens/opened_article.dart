@@ -6,23 +6,26 @@ import 'package:flutter_application/utils/constants/text_styles.dart';
 import 'package:flutter_application/common/widgets/navbar.dart';
 import 'package:get/get.dart';
 
+// ignore: must_be_immutable
 class OpenedArticleScreen extends StatelessWidget {
-  const OpenedArticleScreen({super.key});
+  const OpenedArticleScreen({super.key, this.id});
+  final int? id;
 
   @override
   Widget build(BuildContext context) {
-    String id = Get.parameters['id'] ?? '0';
+    final articleId = id ?? 1;
     final List<Map<String, dynamic>> articles = [
-      {'id': '0', 'title': 'Thinning hair', 'author': 'Radu Ion', 'date': 'Oct. 2023'},
-      {'id': '1', 'title': 'Thinning hair', 'author': 'Radu Ion', 'date': 'Oct. 2023'},
-      {'id': '1', 'title': 'Thinning hair', 'author': 'Pop Ana', 'date': 'Nov. 2023'},
-      {'id': '2', 'title': 'Sensitive skin', 'author': 'Ionescu Maria', 'date': 'Dec. 2023'},
-      {'id': '3', 'title': 'New Mothers', 'author': 'Doncu Alexandru', 'date': 'Jan. 2024'},
-      {'id': '4', 'title': 'Acne scars', 'author': 'Rosu Florentina', 'date': 'Feb. 2024'},
-      {'id': '5', 'title': 'About SPF', 'author': 'Popescu Denisa', 'date': 'Mar. 2024'},
-      {'id': '6', 'title': 'Getting rid of Dandruff', 'author': 'Stoenescu Ema', 'date': 'Apr. 2024'},
+      {'id': 1, 'title': 'Thinning hair', 'author': 'Pop Ana', 'date': 'Nov. 2023'},
+      {'id': 2, 'title': 'Sensitive skin', 'author': 'Ionescu Maria', 'date': 'Dec. 2023'},
+      {'id': 3, 'title': 'New Mothers', 'author': 'Doncu Alexandru', 'date': 'Jan. 2024'},
+      {'id': 4, 'title': 'Acne scars', 'author': 'Rosu Florentina', 'date': 'Feb. 2024'},
+      {'id': 5, 'title': 'About SPF', 'author': 'Popescu Denisa', 'date': 'Mar. 2024'},
+      {'id': 6, 'title': 'Getting rid of Dandruff', 'author': 'Stoenescu Ema', 'date': 'Apr. 2024'},
     ];
-    Map<String, dynamic> selectedArticle = articles.where((article) {return id == article['id'];}) as Map<String, dynamic>;
+    Map<String, dynamic> selectedArticle = articles.firstWhere(
+      (article) => article['id'] == articleId,
+      orElse: () => {'id': -1, 'title': 'Not Found', 'author': 'Unknown', 'date': 'N/A'}
+    );
     final ScrollController scrollController = ScrollController();
 
     return Scaffold(
