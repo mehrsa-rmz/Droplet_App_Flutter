@@ -1,4 +1,5 @@
 import 'package:animated_rating_stars/animated_rating_stars.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/features/appointments/screens/future_appointments.dart';
@@ -14,9 +15,7 @@ import 'package:flutter_application/common/widgets/navbar.dart';
 import 'package:get/get.dart';
 
 class AppointmentsHistoryScreen extends StatefulWidget {
-  const AppointmentsHistoryScreen({super.key, this.isLogged = false});
-
-  final bool isLogged;
+  const AppointmentsHistoryScreen({super.key});
 
   @override
   State<AppointmentsHistoryScreen> createState() =>
@@ -25,10 +24,11 @@ class AppointmentsHistoryScreen extends StatefulWidget {
 
 class _AppointmentsHistoryScreenState extends State<AppointmentsHistoryScreen> {
   double value = 0;
+  User? user = FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
-    return widget.isLogged
+    return user != null
         ? Scaffold(
             bottomNavigationBar: const BottomNavBar(selectedOption: 'explore',),
             body: Container(
@@ -124,7 +124,7 @@ class _AppointmentsHistoryScreenState extends State<AppointmentsHistoryScreen> {
                                                   const Color.fromARGB(
                                                       0, 255, 255, 255),
                                             ),
-                                            onPressed: () => Get.to(() => const AppointmentsHistoryScreen(isLogged: true,)),
+                                            onPressed: () => Get.to(() => const AppointmentsHistoryScreen()),
                                             child: Text(' History ',
                                                 style: tMenu.copyWith(
                                                     color: white1)),
