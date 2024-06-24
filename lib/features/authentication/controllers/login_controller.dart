@@ -1,28 +1,25 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_application/data/repositories/authentication_repository.dart';
 import 'package:flutter_application/features/profile/controllers/user_controller.dart';
 import 'package:flutter_application/utils/helpers/network_manager.dart';
 import 'package:flutter_application/utils/popups/full_screen_loader.dart';
 import 'package:flutter_application/utils/popups/loaders.dart';
 import 'package:get/get.dart';
-//import 'package:get_storage/get_storage.dart';
 
 class LoginController extends GetxController {
   static LoginController get instance => Get.find();
 
   // Variables
-  // final rememberMe = false.obs; // nice to have
-  //final localStorage = GetStorage();
   final email = TextEditingController();
   final password = TextEditingController();
   final userController = Get.put(UserController());
   GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
 
   @override
-  void onInit() {
-    // email.text = localStorage.read('REMEMBER_ME_EMAIL') ?? '';
-    // password.text = localStorage.read('REMEMBER_ME_PASSWORD') ?? '';
-    super.onInit();
+  void onClose() {
+    email.dispose();
+    password.dispose();
+    super.onClose();
   }
 
   /// -- Email and Password SignIn
@@ -45,13 +42,7 @@ class LoginController extends GetxController {
         return;
       }
 
-      // Save Data if Remember Me is selected  // nice to have
-      // if (rememberMe.value) {
-      //   localStorage.write('REMEMBER_ME_EMAIL', email.text.trim());
-      //   localStorage.write('REMEMBER_ME_PASSWORD', password.text.trim());
-      // }
-
-      // Login user using Email & Password Authentication
+      // Login with Email and Password
       final userCredentials = await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
 
       // Assign user data to RxUser of UserController to use in app
