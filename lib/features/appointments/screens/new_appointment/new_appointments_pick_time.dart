@@ -168,7 +168,7 @@ class NewAppointmentsPickTimeScreen extends StatelessWidget {
                                                       text: 'Yes, cancel',
                                                       color: red5,
                                                       type: "primary",
-                                                      onPressed: () => Get.to(() => const AppointmentsHistoryScreen(isLogged: true,)))),
+                                                      onPressed: () => Get.to(() => const AppointmentsHistoryScreen()))),
                                               const SizedBox(width: 12),
                                               SizedBox(
                                                   width: context.width / 2 -

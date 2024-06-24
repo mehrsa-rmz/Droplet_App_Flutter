@@ -24,6 +24,7 @@ class TFullScreenLoader {
           child: Center(
             child: Column(
               children: [
+                const SizedBox(height: 200),
                 const SpinKitFadingCircle(
                   color: Color(0xFFE6AB9E),
                   size: 50.0,

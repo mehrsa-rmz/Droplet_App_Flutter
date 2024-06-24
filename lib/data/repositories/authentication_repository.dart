@@ -41,10 +41,10 @@ class AuthenticationRepository extends GetxController {
    screenRedirect(User? user) async {
     if (user != null) {
       // User Logged-In: If authenticated, go to explore page 
-      Get.offAll(() => const ExploreScreen(isLogged: true));
+      Get.offAll(() => const ExploreScreen());
     } else {
       // User Not Logged-In: If not authenticated, go to explore page
-      Get.offAll(() => const ExploreScreen(isLogged: false));
+      Get.offAll(() => const ExploreScreen());
     }
   }
 
@@ -126,7 +126,7 @@ class AuthenticationRepository extends GetxController {
   Future<void> logout() async {
     try {
       await FirebaseAuth.instance.signOut();
-      Get.offAll(() => const ExploreScreen(isLogged: false));
+      Get.offAll(() => const ExploreScreen());
     } on FirebaseAuthException catch (e) {
       throw TFirebaseAuthException(e.code).message;
     } on FirebaseException catch (e) {

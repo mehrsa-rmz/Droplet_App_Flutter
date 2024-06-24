@@ -65,7 +65,7 @@ class ResetScreenSuccess extends StatelessWidget {
                       text: 'Go homepage',
                       color: blue7,
                       type: 'secondary',
-                      onPressed: () => Get.to(() => const ExploreScreen(isLogged: true)),
+                      onPressed: () => Get.to(() => const ExploreScreen()),
                     ),
                   ],
                 )),

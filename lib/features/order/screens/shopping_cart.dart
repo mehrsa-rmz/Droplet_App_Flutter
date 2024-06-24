@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/features/order/screens/checkout.dart';
@@ -10,19 +11,14 @@ import 'package:flutter_application/common/widgets/navbar.dart';
 import 'package:get/get.dart';
 
 class ShoppingCartScreen extends StatefulWidget {
-  const ShoppingCartScreen({
-    super.key,
-    this.isLogged = false,
-  });
-
-  final bool isLogged;
+  const ShoppingCartScreen({super.key});
 
   @override
   State<ShoppingCartScreen> createState() => _ShoppingCartScreenState();
 }
 
 class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
-  double points = 2500;
+  User? user = FirebaseAuth.instance.currentUser;
 
   final List<Map<String, dynamic>> _products = [
     {

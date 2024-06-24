@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_application/features/explore/screens/explore.dart';
@@ -20,6 +21,7 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
+  User? user = FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +62,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                   text: "Profile",
                   icon: CupertinoIcons.person,
                   selected: widget.selectedOption == 'profile',
-                  onPressed: () => Get.to(() => ProfileScreen())),
+                  onPressed: () => Get.to(() => const ProfileScreen())),
               IconBottomBarWithBadge(
                   text: "Favorites",
                   number: 2, // TODO

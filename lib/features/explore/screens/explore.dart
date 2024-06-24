@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application/features/appointments/screens/appointments_history.dart';
 import 'package:flutter_application/features/articles/screens/articles.dart';
 import 'package:flutter_application/features/customer_service/screens/customer_service.dart';
@@ -14,13 +15,12 @@ import 'package:flutter_application/common/widgets/navbar.dart';
 import 'package:get/get.dart';
 
 class ExploreScreen extends StatelessWidget {
-  const ExploreScreen({super.key, this.isLogged = false});
-
-  final bool isLogged;
+  const ExploreScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Building ExploreScreen, isLogged: $isLogged');
+    User? user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
         bottomNavigationBar: const BottomNavBar(selectedOption: 'explore',),
         body: Container(
@@ -134,7 +134,7 @@ class ExploreScreen extends StatelessWidget {
                                 overlayColor:
                                     const Color.fromARGB(0, 255, 255, 255),
                               ),
-                              onPressed: () => Get.to(() => AppointmentsHistoryScreen(isLogged: isLogged)),
+                              onPressed: () => Get.to(() => const AppointmentsHistoryScreen()),
                               child: Column(
                                 children: [
                                   Icon(CupertinoIcons.calendar,
@@ -183,7 +183,7 @@ class ExploreScreen extends StatelessWidget {
                                 ],
                               )))
                     ]),
-                    isLogged
+                    user != null
                         ? Column(
                             children: [
                               const SizedBox(
@@ -478,92 +478,6 @@ class ExploreScreen extends StatelessWidget {
                     const SizedBox(
                       height: 16,
                     ),
-                    // Container(
-                    //     clipBehavior: Clip.antiAlias,
-                    //     decoration: BoxDecoration(
-                    //       borderRadius: BorderRadius.circular(8),
-                    //       color: pink3,
-                    //       boxShadow: const [
-                    //         BoxShadow(
-                    //           color: Color(0x59223944),
-                    //           spreadRadius: 0,
-                    //           blurRadius: 30,
-                    //           offset: Offset(
-                    //               0, 8), // (0, -8) for BottomBarNavigation
-                    //         )
-                    //       ],
-                    //     ),
-                    //     child: TextButton(
-                    //         style: TextButton.styleFrom(
-                    //           minimumSize: Size.zero,
-                    //           padding: EdgeInsets.zero,
-                    //           overlayColor:
-                    //               const Color.fromARGB(0, 255, 255, 255),
-                    //         ),
-                    //         onPressed: () => Get.to(() => const ArticlesScreen()),
-                    //         child: Row(
-                    //           children: [
-                    //             Container(
-                    //               padding: const EdgeInsets.only(
-                    //                   top: 8, bottom: 8, left: 12),
-                    //               child: SizedBox(
-                    //                 width: context.width - 97 - 12 - 33,
-                    //                 child: Column(
-                    //                   mainAxisAlignment:
-                    //                       MainAxisAlignment.start,
-                    //                   mainAxisSize: MainAxisSize.min,
-                    //                   crossAxisAlignment:
-                    //                       CrossAxisAlignment.start,
-                    //                   children: [
-                    //                     Text('Advice from specialists',
-                    //                         style: h6.copyWith(color: black)),
-                    //                     const SizedBox(height: 8),
-                    //                     Text(
-                    //                         'Access personalized dermatological recommendations from medical professionals.',
-                    //                         style: tParagraphSmall.copyWith(
-                    //                             color: grey8)),
-                    //                     const SizedBox(
-                    //                       height: 8,
-                    //                     ),
-                    //                     Container(
-                    //                       decoration: BoxDecoration(
-                    //                           border: Border(
-                    //                               top: BorderSide(
-                    //                                   color: pink6, width: 1))),
-                    //                       child: Column(
-                    //                         children: [
-                    //                           const SizedBox(
-                    //                             height: 8,
-                    //                           ),
-                    //                           Row(
-                    //                             mainAxisAlignment:
-                    //                                 MainAxisAlignment.center,
-                    //                             children: [
-                    //                               Text(
-                    //                                 'TAKE A LOOK',
-                    //                                 style: tSubtext.copyWith(
-                    //                                     color: pink6),
-                    //                               ),
-                    //                               const SizedBox(
-                    //                                 width: 10,
-                    //                               ),
-                    //                               Icon(
-                    //                                   CupertinoIcons
-                    //                                       .chevron_right,
-                    //                                   color: pink6,
-                    //                                   size: 16)
-                    //                             ],
-                    //                           ),
-                    //                         ],
-                    //                       ),
-                    //                     )
-                    //                   ],
-                    //                 ),
-                    //               ),
-                    //             ),
-                    //             Image.asset(banner4, height: 128),
-                    //           ],
-                    //         ))),
                   ],
                 )
               ],

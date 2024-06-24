@@ -108,7 +108,7 @@ class _FutureAppointmentsScreenState extends State<FutureAppointmentsScreen> {
                                       overlayColor: const Color.fromARGB(
                                           0, 255, 255, 255),
                                     ),
-                                    onPressed: () => Get.to(() => const AppointmentsHistoryScreen(isLogged: true,)),
+                                    onPressed: () => Get.to(() => const AppointmentsHistoryScreen()),
                                     child: Text('History',
                                         style: tMenu.copyWith(color: blue7)),
                                   ),
