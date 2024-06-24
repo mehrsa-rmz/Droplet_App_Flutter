@@ -15,6 +15,7 @@ class SignupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(SignupController(), permanent: true);
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
@@ -70,7 +71,7 @@ class SignupForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(SignupController());
+    final controller = Get.find<SignupController>();
     return Form(
       key: controller.signupFormKey,
       child: Column(
@@ -138,7 +139,7 @@ class SignupForm extends StatelessWidget {
             text: 'Go to login',
             color: blue7,
             type: 'secondary',
-            onPressed: () => Get.to(() => const LoginScreen()),
+            onPressed: () => Get.off(() => const LoginScreen()),
           ),
         ],
       ),

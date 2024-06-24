@@ -17,12 +17,22 @@ class SignupController extends GetxController {
   final lastName = TextEditingController();
   final password = TextEditingController();
   final repeatPassword = TextEditingController();
-  GlobalKey<FormState>  signupFormKey = GlobalKey<FormState>();
+  GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
+
+  @override
+  void onClose() {
+    email.dispose();
+    firstName.dispose();
+    lastName.dispose();
+    password.dispose();
+    repeatPassword.dispose();
+    super.onClose();
+  }
 
   // Update current index and jump to nextPage
   Future<void> signup() async {
-    try{
-      // Start Loading
+    // Start Loading
+    try {
       TFullScreenLoader.openLoadingDialog('We are processing your information...');
 
       // Check Internet Connectivity
@@ -60,8 +70,8 @@ class SignupController extends GetxController {
 
       // Success message
       Get.to(() => const SignupSuccessScreen());
-    }catch (e) {
       // Show some Generic Error to the user
+    } catch (e) {
       TFullScreenLoader.stopLoading();
       TLoaders.errorSnackBar(title: 'An error occured', message: e.toString());
     }

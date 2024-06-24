@@ -61,7 +61,7 @@ class CheckEmailScreen extends StatelessWidget {
                     text: 'Go to login',
                     color: blue7,
                     type: 'secondary',
-                    onPressed: () => Get.to(() => const LoginScreen()),
+                    onPressed: () => Get.off(() => const LoginScreen()),
                   ),
                   const SizedBox(height: 12),
                   ButtonType(

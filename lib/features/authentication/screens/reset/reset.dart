@@ -27,67 +27,71 @@ class ResetScreen extends StatelessWidget {
         ),
         child: Center(
           child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-              decoration: BoxDecoration(
-                color: white1,
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x59223944),
-                    spreadRadius: 0,
-                    blurRadius: 30,
-                    offset: Offset(0, 8), // (0, -8) for BottomBarNavigation
-                  )
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(children: [
-                    SvgPicture.asset(logoSmall),
-                    const SizedBox(width: 4),
-                    Text('Droplet', style: tLogoSmall.copyWith(color: blue7))
-                  ]),
-                  const SizedBox(height: 20),
-                  Text('Reset password', style: h3.copyWith(color: blue7)),
-                  const SizedBox(height: 32),
-                  Text(
-                      'Enter your email address below and we will send you a code to reset your password.',
-                      style: tParagraph.copyWith(color: grey8)),
-                  const SizedBox(height: 32),
-                  Form(
-                    child: Column(
-                      children: [
-                        Form(
-                          key: controller.resetPasswordFormKey,
-                          child: InputType(
-                            controller: controller.email,
-                            validator: TValidator.validateEmail,
-                            type: 'one-line',
-                            inputType: TextInputType.emailAddress,
-                            placeholder: 'Email',
-                            mustBeFilled: true,
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        ButtonType(
-                          text: 'Send code',
-                          color: blue7,
-                          type: 'primary',
-                          onPressed: () => controller.sendPasswordResetEmail(),
-                        ),
-                        const SizedBox(height: 12),
-                        ButtonType(
-                          text: 'Go to login',
-                          color: blue7,
-                          type: 'secondary',
-                          onPressed: () => Get.to(() => const LoginScreen()),
-                        ),
-                      ],
-                    ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+            decoration: BoxDecoration(
+              color: white1,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x59223944),
+                  spreadRadius: 0,
+                  blurRadius: 30,
+                  offset: Offset(0, 8),
+                )
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(children: [
+                  SvgPicture.asset(logoSmall),
+                  const SizedBox(width: 4),
+                  Text('Droplet', style: tLogoSmall.copyWith(color: blue7))
+                ]),
+                const SizedBox(height: 20),
+                Text('Reset password', style: h3.copyWith(color: blue7)),
+                const SizedBox(height: 32),
+                Text(
+                  'Enter your email address below and we will send you a code to reset your password.',
+                  style: tParagraph.copyWith(color: grey8),
+                ),
+                const SizedBox(height: 32),
+                Form(
+                  key: controller.resetPasswordFormKey,
+                  child: Column(
+                    children: [
+                      InputType(
+                        controller: controller.email,
+                        validator: TValidator.validateEmail,
+                        type: 'one-line',
+                        inputType: TextInputType.emailAddress,
+                        placeholder: 'Email',
+                        mustBeFilled: true,
+                      ),
+                      const SizedBox(height: 32),
+                      ButtonType(
+                        text: 'Send code',
+                        color: blue7,
+                        type: 'primary',
+                        onPressed: () => controller.sendPasswordResetEmail(),
+                      ),
+                      const SizedBox(height: 12),
+                      ButtonType(
+                        text: 'Go to login',
+                        color: blue7,
+                        type: 'secondary',
+                        onPressed: () {
+                          // Adding debug log
+                          debugPrint('Navigating to LoginScreen from ResetScreen');
+                          Get.off(() => const LoginScreen());
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              )),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
