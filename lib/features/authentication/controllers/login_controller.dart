@@ -5,14 +5,14 @@ import 'package:flutter_application/utils/helpers/network_manager.dart';
 import 'package:flutter_application/utils/popups/full_screen_loader.dart';
 import 'package:flutter_application/utils/popups/loaders.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
+//import 'package:get_storage/get_storage.dart';
 
 class LoginController extends GetxController {
   static LoginController get instance => Get.find();
 
   // Variables
   // final rememberMe = false.obs; // nice to have
-  final localStorage = GetStorage();
+  //final localStorage = GetStorage();
   final email = TextEditingController();
   final password = TextEditingController();
   final userController = Get.put(UserController());
@@ -20,8 +20,8 @@ class LoginController extends GetxController {
 
   @override
   void onInit() {
-    email.text = localStorage.read('REMEMBER_ME_EMAIL') ?? '';
-    password.text = localStorage.read('REMEMBER_ME_PASSWORD') ?? '';
+    // email.text = localStorage.read('REMEMBER_ME_EMAIL') ?? '';
+    // password.text = localStorage.read('REMEMBER_ME_PASSWORD') ?? '';
     super.onInit();
   }
 

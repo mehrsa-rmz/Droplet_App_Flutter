@@ -7,13 +7,13 @@ import 'package:flutter_application/utils/exceptions/format_exceptions.dart';
 import 'package:flutter_application/utils/exceptions/platform_exceptions.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
+//import 'package:get_storage/get_storage.dart';
 
 class AuthenticationRepository extends GetxController {
   static AuthenticationRepository get instance => Get.find();
 
   // Variables
-  final deviceStorage = GetStorage();
+  //final deviceStorage = GetStorage();
   late final Rx<User?> _firebaseUser;
   final _auth = FirebaseAuth.instance;
 
@@ -42,6 +42,9 @@ class AuthenticationRepository extends GetxController {
     if (user != null) {
       // User Logged-In: If authenticated, go to explore page 
       Get.offAll(const ExploreScreen(isLogged: true));
+    } else {
+      // User Not Logged-In: If not authenticated, go to explore page
+      Get.offAll(const ExploreScreen(isLogged: false));
     }
   }
 
