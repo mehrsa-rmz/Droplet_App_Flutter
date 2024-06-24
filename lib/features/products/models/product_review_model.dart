@@ -1,48 +1,66 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_application/features/products/models/product_model.dart';
+import 'package:flutter_application/features/profile/models/user_model.dart';
 
 class ProductReviewModel {
   final String id;
-  final String userId;
-  final String productId;
+  final UserModel user;
+  final ProductModel product;
   final double rating;
-  final String? comment;
+  final String? message;
   final DateTime timestamp;
 
   ProductReviewModel({
     required this.id,
-    required this.userId,
-    required this.productId,
+    required this.user,
+    required this.product,
     required this.rating,
     required this.timestamp,
-    this.comment,
+    this.message,
   });
 
   /// Create Empty func for clean code
-  static ProductReviewModel empty() => ProductReviewModel(id: '', userId: '', productId: '', rating: 5, timestamp: DateTime.now());
+  static ProductReviewModel empty() => ProductReviewModel(id: '', user: UserModel.empty(), product: ProductModel.empty(), rating: 5, timestamp: DateTime.now(), message: '');
 
   // Convert to JSON structure for Firebase
   Map<String, dynamic> toJson() {
     return{
-      'specialistReviewId': id,
-      'productId': productId,
-      'customerId': userId,
-      'rating': rating,
-      'comment': comment,
-      'timestamp': timestamp,
+      'itemID': id,
+      'productId': product.id,
+      'customerId': user.id,
+      'productReviewRating': rating,
+      'productReviewMessage': message,
+      'productReviewTimestamp': timestamp,
     };
   }
 
   /// Map Json oriented document snapshot from Firebase to Model
-  factory ProductReviewModel.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) {
+  static Future<ProductReviewModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
     if (document.data() != null) {
       final data = document.data()!;
+      final userId = data['customerId'] as String;
+      final productId = data['productId'] as String;
+      // Fetch user document
+      final userDoc = await FirebaseFirestore.instance
+          .collection('Customers')
+          .doc(userId)
+          .get();
+      final user = UserModel.fromSnapshot(userDoc);
+
+      // Fetch product document
+      final productDoc = await FirebaseFirestore.instance
+          .collection('Products')
+          .doc(productId)
+          .get();
+      final product = ProductModel.fromSnapshot(productDoc);
+
       return ProductReviewModel(
         id: document.id, 
-        productId: data['productId'] as String,
-        userId: data['customerId'] as String,
-        rating: data['rating'] as double,
-        timestamp: data['timestamp'] as DateTime,
-        comment: data['comment'] as String,
+        product: product,
+        user: user,
+        rating: data['productReviewRating'] as double,
+        timestamp: data['productReviewTimestamp'] as DateTime,
+        message: data['productReviewMessage'] as String,
         );
     } else {
       return ProductReviewModel.empty();

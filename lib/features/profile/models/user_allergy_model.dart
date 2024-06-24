@@ -1,35 +1,35 @@
-import 'package:flutter_application/features/products/models/product_model.dart';
+import 'package:flutter_application/features/products/models/ingredient_model.dart';
 import 'package:flutter_application/features/profile/models/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class FavoriteModel {
+class UserAllergyModel {
   final String id;
   final UserModel user;
-  final ProductModel product;
+  final IngredientModel ingredient;
 
-  FavoriteModel({
+  UserAllergyModel({
     required this.id,
     required this.user,
-    required this.product
+    required this.ingredient
   });
 
-  static FavoriteModel empty() => FavoriteModel(id: '', user: UserModel.empty(), product: ProductModel.empty());
+  static UserAllergyModel empty() => UserAllergyModel(id: '', user: UserModel.empty(), ingredient: IngredientModel.empty());
   
   // Convert to JSON structure for Firebase
   Map<String, dynamic> toJson() {
     return{
       'itemID': id,
       'customerId': user.id,
-      'productId': product.id,
+      'ingredientId': ingredient.id,
     };
   }
 
   // Create a model from Firebase document
-   static Future<FavoriteModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
+   static Future<UserAllergyModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
     if (document.data() != null) {
       final data = document.data()!;
       final userId = data['customerId'] as String;
-      final productId = data['productId'] as String;
+      final ingredientId = data['ingredientId'] as String;
       // Fetch user document
       final userDoc = await FirebaseFirestore.instance
           .collection('Customers')
@@ -37,20 +37,20 @@ class FavoriteModel {
           .get();
       final user = UserModel.fromSnapshot(userDoc);
 
-      // Fetch product document
-      final productDoc = await FirebaseFirestore.instance
-          .collection('Products')
-          .doc(productId)
+      // Fetch ingredient document
+      final ingredientDoc = await FirebaseFirestore.instance
+          .collection('Ingredients')
+          .doc(ingredientId)
           .get();
-      final product = ProductModel.fromSnapshot(productDoc);
+      final ingredient = IngredientModel.fromSnapshot(ingredientDoc);
 
-      return FavoriteModel(
+      return UserAllergyModel(
         id: document.id,
         user: user,
-        product: product
+        ingredient: ingredient
         );
     } else {
-      return FavoriteModel.empty();
+      return UserAllergyModel.empty();
     }
   }
 

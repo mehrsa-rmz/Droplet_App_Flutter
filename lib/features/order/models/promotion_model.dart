@@ -2,30 +2,27 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PromotionModel {
   final String id;
-  final int promotion;
+  final int amount;
 
   PromotionModel({
     required this.id,
-    required this.promotion,
+    required this.amount,
   });
 
-  /// Create Empty func for clean code
-  static PromotionModel empty() => PromotionModel(id: '', promotion: 0);
-
+  static PromotionModel empty() => PromotionModel(id: '', amount: 0);
 
   /// Convert model to Json structure so that you can store data in Firebase
   Map<String, dynamic> toJson() {
     return {
-      'promotionId': id,
-      'promotion': promotion,
+      'itemID': id,
+      'promotionAmount': amount,
     };
   }
 
-  /// Convert model from Json structure so that you can take data in Firebase
   factory PromotionModel.fromJson(Map<String, dynamic> json) {
     return PromotionModel(
-      id: json['promotionId'] as String,
-      promotion: json['promotion'] as int,
+      id: json['itemID'],
+      amount: json['promotionAmount'] as int
     );
   }
 
@@ -36,7 +33,7 @@ class PromotionModel {
     // Map JSON Record to the Model
     return PromotionModel(
       id: document.id,
-      promotion: data['promotion'] as int,
+      amount: data['promotionAmount'] as int,
     );
   }
 }

@@ -1,41 +1,41 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_application/features/order/models/cart_model.dart';
+import 'package:flutter_application/features/order/models/order_model.dart';
 import 'package:flutter_application/features/products/models/product_model.dart';
 
-class CartItemModel {
+class ProductOrderModel {
   final String id;
   final ProductModel product;
-  final CartModel cart;
-  bool isTester;
-  int quantity;
+  final OrderModel order;
+  final bool isTester;
+  final int quantity;
 
-  CartItemModel({
+  ProductOrderModel({
     required this.id,
     required this.product,
-    required this.cart,
+    required this.order,
     required this.isTester,
     required this.quantity
   });
 
-  static CartItemModel empty() => CartItemModel(id: '', product: ProductModel.empty(), cart: CartModel.empty(), isTester: false, quantity: 0);
+  static ProductOrderModel empty() => ProductOrderModel(id: '', product: ProductModel.empty(), order: OrderModel.empty(), isTester: false, quantity: 0);
   
   // Convert to JSON structure for Firebase
   Map<String, dynamic> toJson() {
     return{
       'itemID': id,
       'productId': product.id,
-      'cartId': cart.id,
-      'inCartIsTester': isTester,
-      'inCartQuantity': quantity
+      'orderId': order.id,
+      'isTester': isTester,
+      'quantity': quantity
     };
   }
 
   // Create a model from Firebase document
-   static Future<CartItemModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
+   static Future<ProductOrderModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
     if (document.data() != null) {
       final data = document.data()!;
       final productId = data['productId'] as String;
-      final cartId = data['cartId'] as String;
+      final orderId = data['orderId'] as String;
       // Fetch product document
       final productDoc = await FirebaseFirestore.instance
           .collection('Products')
@@ -43,22 +43,22 @@ class CartItemModel {
           .get();
       final product = ProductModel.fromSnapshot(productDoc);
 
-      // Fetch cart document
-      final cartDoc = await FirebaseFirestore.instance
+      // Fetch order document
+      final orderDoc = await FirebaseFirestore.instance
           .collection('Orders')
-          .doc(cartId)
+          .doc(orderId)
           .get();
-      final cart = CartModel.fromSnapshot(cartDoc);
+      final order = OrderModel.fromSnapshot(orderDoc);
 
-      return CartItemModel(
+      return ProductOrderModel(
         id: document.id,
         product: product,
-        cart: await cart,
-        isTester: data['inCartIsTester'] as bool,
-        quantity: data['inCartQuantity'] as int
+        order: await order,
+        isTester: data['isTester'] as bool,
+        quantity: data['quantity'] as int
         );
     } else {
-      return CartItemModel.empty();
+      return ProductOrderModel.empty();
     }
   }
 

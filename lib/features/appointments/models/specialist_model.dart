@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_application/utils/constants/enums.dart';
 
 class SpecialistModel {
   final String id;
   final String name;
   final String title;
   final int noYearsExperience;
-  final StoreLocations location;
+  final String location;
 
   SpecialistModel({
     required this.id,
@@ -15,44 +14,30 @@ class SpecialistModel {
     required this.noYearsExperience,
     required this.location
   });
- 
-  String get locationText {
-    switch (location) {
-      case StoreLocations.afi: return 'AFI Palace Mall';
-      case StoreLocations.baneasa: return 'Baneasa Mall';
-      case StoreLocations.mega: return 'Mega Mall';
-      case StoreLocations.parklake: return 'ParkLake Mall';
-      case StoreLocations.plaza: return 'Plaza Romania Mall';
-      case StoreLocations.promenada: return 'Promenada Mall';
-      case StoreLocations.sun: return 'Sun Plaza Mall';
-      case StoreLocations.unirii: return 'Unirii Shopping Center';
-      case StoreLocations.online: return 'Online';
-    }
-  }
 
   /// Create Empty func for clean code
-  static SpecialistModel empty() => SpecialistModel(id: '', name: '', title: '', noYearsExperience: 0, location: StoreLocations.afi);
+  static SpecialistModel empty() => SpecialistModel(id: '', name: '', title: '', noYearsExperience: 0, location: '');
 
 
   /// Convert model to Json structure so that you can store data in Firebase
   Map<String, dynamic> toJson() {
     return {
-      'specialistId': id,
+      'itemID': id,
       'specialistName': name,
-      'title': title,
+      'specialistTitle': title,
       'noYearsExperience': noYearsExperience,
-      'location': location.toString()
+      'specialistLocation': location
     };
   }
 
   /// Convert model from Json structure so that you can take data in Firebase
   factory SpecialistModel.fromJson(Map<String, dynamic> json) {
     return SpecialistModel(
-      id: json['specialistId'],
-      name: json['specialistName'],
-      title: json['title'],
-      noYearsExperience: json['noYearsExperience'],
-      location: json['location'] 
+      id: json['itemID'] as String,
+      name: json['specialistName'] as String,
+      title: json['specialistTitle'] as String,
+      noYearsExperience: json['noYearsExperience'] as int,
+      location: json['specialistLocation'] as String 
     );
   }
 
@@ -64,9 +49,9 @@ class SpecialistModel {
     return SpecialistModel(
       id: document.id,
       name: data['specialistName'] as String,
-      title: data['title'] as String,
+      title: data['specialistTitle'] as String,
       noYearsExperience: data['noYearsExperience'] as int,
-      location: StoreLocations.values.firstWhere((e) => e.toString() == data['location']),
+      location: data['specialistLocation'] as String 
     );
   }
 }
