@@ -55,11 +55,11 @@ class AppRoutes {
     GetPage(name: '/gift_guide_categories', page: () => const GiftGuideCategoriesScreen()),
     GetPage(name: '/gift_guide_products', page: () => GiftGuideScreen()),
     GetPage(name: '/articles', page: () => const ArticlesScreen()),
-    GetPage(name: '/articles/:id', page: () => const OpenedArticleScreen()),
+    GetPage(name: '/article', page: () => OpenedArticleScreen()),
     //Products
     GetPage(name: '/product_categories', page: () => const ProductCategoriesScreen()),
     GetPage(name: '/products', page: () => ProductsScreen()),
-    GetPage(name: '/products/:id', page: () => const ProductDetailsScreen()),
+    GetPage(name: '/product', page: () => const ProductDetailsScreen()),
     //Profile
     GetPage(name: '/profile', page: () => ProfileScreen()),
     GetPage(name: '/edit', page: () => const EditProfileScreen()),

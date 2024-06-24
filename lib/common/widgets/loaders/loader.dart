@@ -33,14 +33,14 @@ class TLoaderWidget extends StatelessWidget {
         children: [
           Text(
             text,
-            style: tParagraphMed.copyWith(color: black),
+            style: h5.copyWith(color: white1),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           showAction
               ? SizedBox(
                   width: 250,
-                  child: ButtonType(text: actionText!, color: blue7, type: 'secondary'),
+                  child: ButtonType(text: actionText!, color: pink5, type: 'secondary'),
                 )
               : const SizedBox(),
         ],

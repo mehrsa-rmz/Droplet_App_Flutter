@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import '../../common/widgets/loaders/loader.dart';
 import '../constants/colors.dart';
@@ -17,14 +18,20 @@ class TFullScreenLoader {
       builder: (_) => PopScope(
         canPop: false, // Disable popping with the back button
         child: Container(
-          color: white1,
+          color: blue7,
           width: double.infinity,
           height: double.infinity,
-          child: Column(
-            children: [
-              const SizedBox(height: 250), // Adjust the spacing as needed
-              TLoaderWidget(text: text),
-            ],
+          child: Center(
+            child: Column(
+              children: [
+                const SpinKitFadingCircle(
+                  color: Color(0xFFE6AB9E),
+                  size: 50.0,
+                ),
+                const SizedBox(height: 100), // Adjust the spacing as needed
+                TLoaderWidget(text: text),
+              ],
+            ),
           ),
         ),
       ),
