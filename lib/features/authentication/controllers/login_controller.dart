@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 class LoginController extends GetxController {
   static LoginController get instance => Get.find();
 
+  // Variables
   final email = TextEditingController();
   final password = TextEditingController();
   final userController = Get.put(UserController());
@@ -21,10 +22,13 @@ class LoginController extends GetxController {
     super.onClose();
   }
 
+  /// -- Email and Password SignIn
   Future<void> login() async {
     try {
+      /// -- Email and Password SignIn
       TFullScreenLoader.openLoadingDialog('Logging you in...');
 
+      // Check Internet Connectivity
       final isConnected = await NetworkManager.instance.isConnected();
       if (!isConnected) {
         TFullScreenLoader.stopLoading();
@@ -32,17 +36,22 @@ class LoginController extends GetxController {
         return;
       }
 
+      // Form Validation
       if (!loginFormKey.currentState!.validate()) {
         TFullScreenLoader.stopLoading();
         return;
       }
 
+      // Login with Email and Password
       final userCredentials = await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
 
+      // Assign user data to RxUser of UserController to use in app
       await userController.fetchUserRecord();
 
+      // Remove Loader
       TFullScreenLoader.stopLoading();
 
+      // Redirect
       await AuthenticationRepository.instance.screenRedirect(userCredentials.user);
     } catch (e) {
       TFullScreenLoader.stopLoading();
