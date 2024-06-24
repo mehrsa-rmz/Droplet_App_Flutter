@@ -5,15 +5,12 @@ import 'package:get/get.dart';
 
 import '../../../common/widgets/loaders/circular_loader.dart';
 import '../../../data/repositories/user_repository.dart';
-import '../../../utils/helpers/network_manager.dart';
-import '../../../utils/popups/full_screen_loader.dart';
 import '../../../utils/popups/loaders.dart';
-import '../../authentication/screens/login/login.dart';
 import '../models/user_model.dart';
 
 /// Controller to manage user-related functionality.
 class UserController extends GetxController {
-  static UserController get instance => Get.find();
+  static UserController get instance => Get.put(UserController());
 
   Rx<UserModel> user = UserModel.empty().obs;
   final profileLoading = false.obs;
@@ -86,35 +83,9 @@ class UserController extends GetxController {
 
 
   /// Logout Loader Function
-  logout() {
+  logout() async {
     try {
-      Get.defaultDialog(
-        contentPadding: const EdgeInsets.all(16),
-        title: 'Logout',
-        middleText: 'Are you sure you want to Logout?',
-        confirm: ElevatedButton(
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24),
-            child: Text('Confirm'),
-          ),
-          onPressed: () async {
-            onClose();
-
-            /// On Confirmation show any loader until user Logged Out.
-            Get.defaultDialog(
-              title: '',
-              barrierDismissible: false,
-              backgroundColor: Colors.transparent,
-              content: const TCircularLoader(),
-            );
-            await AuthenticationRepository.instance.logout();
-          },
-        ),
-        cancel: OutlinedButton(
-          child: const Text('Cancel'),
-          onPressed: () => Navigator.of(Get.overlayContext!).pop(),
-        ),
-      );
+      await AuthenticationRepository.instance.logout();
     } catch (e) {
       TLoaders.errorSnackBar(title: 'Oh Snap', message: e.toString());
     }

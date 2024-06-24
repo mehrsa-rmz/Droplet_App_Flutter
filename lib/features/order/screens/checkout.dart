@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/features/order/screens/order_success.dart';
@@ -17,7 +18,7 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  //final Map<String, dynamic> _user = {'emai': 'poplaura@gmail.com', 'password': '123456', 'resetCode': '-', 'firstName': 'Ana', 'lastName': 'Pop', 'cliendCode': '165432', 'points': 475.toDouble(), 'phone': '0722555444', 'city': 'Bucharest', 'postalCode': '0308334', 'address': 'Sector 4, str. Pacii nr. 54, bl. F2, scara 2, etaj 5, ap. 44', 'gender': 'f', 'birthday': 'October 16th 1999', 'skinType': ['oily', 'sensitive', 'acne prone'], 'hairType': ['curly', 'dry', 'dyed', 'thick', 'frizzy'], 'allergies': [], 'preferences': ['floral', 'fruity', 'spiced'], 'testersNo': 2};
+  User? user = FirebaseAuth.instance.currentUser;
 
   final List<Map<String, dynamic>> _products = [
     {

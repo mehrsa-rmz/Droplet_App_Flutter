@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/features/authentication/screens/login/login.dart';
 import 'package:flutter_application/features/authentication/screens/signup/signup.dart';
+import 'package:flutter_application/features/profile/controllers/user_controller.dart';
 import 'package:flutter_application/features/profile/screens/edit_profile.dart';
 import 'package:flutter_application/features/profile/screens/loyalty_program.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
@@ -13,15 +15,16 @@ import 'package:get/get.dart';
 
 // ignore: must_be_immutable
 class ProfileScreen extends StatefulWidget {
-  ProfileScreen({super.key, this.isLogged = false});
-
-  bool isLogged;
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  User? user = FirebaseAuth.instance.currentUser;
+  final controller = UserController.instance;
+  
   var testersNo = 2;
   bool expanded = false;
 
@@ -122,7 +125,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     )
                   ],
                 )),
-            widget.isLogged
+            user != null
                 ? Expanded(
                     child: ListView(
                       children: [
@@ -130,7 +133,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Column(
                               children: [
-                                //const SizedBox(height: 32,),
+                                const SizedBox(height: 32,),
                                 ButtonTypeIcon(
                                   text: 'Loyalty Program',
                                   icon: CupertinoIcons.gift,
@@ -561,19 +564,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                         text: 'Yes',
                                                                         color: red5,
                                                                         type: "primary",
-                                                                        onPressed: () => {
-                                                                              setState(() {
-                                                                                widget.isLogged = false;
-                                                                                Navigator.of(context).pop();
-                                                                              })
-                                                                            })),
+                                                                        onPressed: () => controller.logout()
+                                                                      )
+                                                                    ),
                                                                 const SizedBox(
                                                                     width: 12),
                                                                 SizedBox(
-                                                                    width: context.width /
-                                                                            2 -
-                                                                        6 -
-                                                                        40,
+                                                                    width: context.width / 2 - 6 - 40,
                                                                     child: ButtonType(
                                                                         text:
                                                                             'Cancel',

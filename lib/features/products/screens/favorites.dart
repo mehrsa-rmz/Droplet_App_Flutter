@@ -1,5 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/common/widgets/buttons.dart';
+import 'package:flutter_application/features/authentication/screens/login/login.dart';
+import 'package:flutter_application/features/authentication/screens/signup/signup.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
 import 'package:flutter_application/utils/constants/text_styles.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
@@ -15,6 +19,7 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
+  User? user = FirebaseAuth.instance.currentUser;
   final TextEditingController _searchController = TextEditingController();
   final List<Map<String, dynamic>> _products = [
     {
@@ -158,7 +163,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   ),
                 ),
               ),
-              Expanded(
+              user != null
+                ? Expanded(
                   child: ListView(
                       controller: scrollController,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -258,9 +264,70 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           const SizedBox(
                             height: 20,
                           )
-                        ])
-                  ]))
-            ]))));
+                        ]
+                      )
+                    ]
+                  )
+                ): Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        const SizedBox(
+                          height: 32,
+                        ),
+                        Text(
+                            'To access this feature, you need to have an account. Having an account enables you to save products to Favorites.',
+                            style: tParagraph.copyWith(color: grey8)),
+                        const SizedBox(
+                          height: 32,
+                        ),
+                        Container(
+                            decoration: const BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0x59223944),
+                                  spreadRadius: 0,
+                                  blurRadius: 30,
+                                  offset: Offset(0, 8),
+                                )
+                              ],
+                            ),
+                            child: ButtonTypeIcon(
+                              text: 'Login',
+                              icon: CupertinoIcons.square_arrow_right,
+                              color: blue7,
+                              type: 'primary',
+                              onPressed: () => Get.to(() => const LoginScreen()),
+                            )),
+                        const SizedBox(
+                          height: 24,
+                        ),
+                        Container(
+                            decoration: const BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0x59223944),
+                                  spreadRadius: 0,
+                                  blurRadius: 30,
+                                  offset: Offset(0, 8),
+                                )
+                              ],
+                            ),
+                            child: ButtonTypeIcon(
+                              text: 'Sign up',
+                              icon: CupertinoIcons.person_badge_plus,
+                              color: red5,
+                              type: 'primary',
+                              onPressed: () => Get.to(() => const SignupScreen()),
+                            )),
+                      ],
+                    ),
+                  ),
+            ]
+          )
+        )
+      )
+    );
   }
 }
 

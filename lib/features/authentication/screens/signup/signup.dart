@@ -15,7 +15,7 @@ class SignupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(SignupController(), permanent: true);
+    final controller = Get.put(SignupController());
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
@@ -54,94 +54,82 @@ class SignupScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     Text('Sign Up', style: h3.copyWith(color: blue7)),
                     const SizedBox(height: 32),
-                    const SignupForm(),
+                    Form(
+                      key: controller.signupFormKey,
+                      child: Column(
+                        children: [
+                          InputType(
+                            controller: controller.email,
+                            validator: (value) => TValidator.validateEmail(value),
+                            type: 'one-line',
+                            inputType: TextInputType.emailAddress,
+                            placeholder: 'Email',
+                            mustBeFilled: true,
+                          ),
+                          const SizedBox(height: 16),
+                          InputType(
+                            controller: controller.firstName,
+                            validator: (value) =>
+                                TValidator.validateEmptyText('First name', value),
+                            type: 'one-line',
+                            inputType: TextInputType.name,
+                            placeholder: 'First Name',
+                            mustBeFilled: true,
+                          ),
+                          const SizedBox(height: 16),
+                          InputType(
+                            controller: controller.lastName,
+                            validator: (value) =>
+                                TValidator.validateEmptyText('Last name', value),
+                            type: 'one-line',
+                            inputType: TextInputType.name,
+                            placeholder: 'Last Name',
+                            mustBeFilled: true,
+                          ),
+                          const SizedBox(height: 16),
+                          InputType(
+                            controller: controller.password,
+                            validator: (value) => TValidator.validatePassword(value),
+                            type: 'password',
+                            inputType: TextInputType.visiblePassword,
+                            placeholder: 'Password',
+                            mustBeFilled: true,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                              'The password must contain at least: \nan uppercase (A) and a lowercase (a) character, a number (1) and a special character (#).',
+                              style: tParagraphSmall.copyWith(color: grey8)),
+                          const SizedBox(height: 16),
+                          InputType(
+                            controller: controller.repeatPassword,
+                            validator: (value) => TValidator.validateRepeatPassword(
+                                controller.password.text, value),
+                            type: 'password',
+                            inputType: TextInputType.visiblePassword,
+                            placeholder: 'Repeat password',
+                            mustBeFilled: true,
+                          ),
+                          const SizedBox(height: 32),
+                          ButtonType(
+                            text: 'Create account',
+                            color: blue7,
+                            type: 'primary',
+                            onPressed: () => controller.signup(),
+                          ),
+                          const SizedBox(height: 12),
+                          ButtonType(
+                            text: 'Go to login',
+                            color: blue7,
+                            type: 'secondary',
+                            onPressed: () => Get.off(() => const LoginScreen()),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 )),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class SignupForm extends StatelessWidget {
-  const SignupForm({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<SignupController>();
-    return Form(
-      key: controller.signupFormKey,
-      child: Column(
-        children: [
-          InputType(
-            controller: controller.email,
-            validator: (value) => TValidator.validateEmail(value),
-            type: 'one-line',
-            inputType: TextInputType.emailAddress,
-            placeholder: 'Email',
-            mustBeFilled: true,
-          ),
-          const SizedBox(height: 16),
-          InputType(
-            controller: controller.firstName,
-            validator: (value) =>
-                TValidator.validateEmptyText('First name', value),
-            type: 'one-line',
-            inputType: TextInputType.name,
-            placeholder: 'First Name',
-            mustBeFilled: true,
-          ),
-          const SizedBox(height: 16),
-          InputType(
-            controller: controller.lastName,
-            validator: (value) =>
-                TValidator.validateEmptyText('Last name', value),
-            type: 'one-line',
-            inputType: TextInputType.name,
-            placeholder: 'Last Name',
-            mustBeFilled: true,
-          ),
-          const SizedBox(height: 16),
-          InputType(
-            controller: controller.password,
-            validator: (value) => TValidator.validatePassword(value),
-            type: 'password',
-            inputType: TextInputType.visiblePassword,
-            placeholder: 'Password',
-            mustBeFilled: true,
-          ),
-          const SizedBox(height: 8),
-          Text(
-              'The password must contain at least: \nan uppercase (A) and a lowercase (a) character, a number (1) and a special character (#).',
-              style: tParagraphSmall.copyWith(color: grey8)),
-          const SizedBox(height: 16),
-          InputType(
-            controller: controller.repeatPassword,
-            validator: (value) => TValidator.validateRepeatPassword(
-                controller.password.text, value),
-            type: 'password',
-            inputType: TextInputType.visiblePassword,
-            placeholder: 'Repeat password',
-            mustBeFilled: true,
-          ),
-          const SizedBox(height: 32),
-          ButtonType(
-            text: 'Create account',
-            color: blue7,
-            type: 'primary',
-            onPressed: () => controller.signup(),
-          ),
-          const SizedBox(height: 12),
-          ButtonType(
-            text: 'Go to login',
-            color: blue7,
-            type: 'secondary',
-            onPressed: () => Get.off(() => const LoginScreen()),
-          ),
-        ],
       ),
     );
   }

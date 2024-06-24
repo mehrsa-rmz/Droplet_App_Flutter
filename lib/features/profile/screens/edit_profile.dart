@@ -26,7 +26,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        bottomNavigationBar: const BottomNavBar(selectedOption: 'profile',),
+        bottomNavigationBar: const BottomNavBar(
+          selectedOption: 'profile',
+        ),
         body: Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -64,6 +66,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(children: [
+                      const SizedBox(height: 32),
                       Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
@@ -88,143 +91,130 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 child: Column(
                               children: [
                                 InputType(
-                                    type: 'one-line',
-                                    inputType: TextInputType.name,
-                                    placeholder: 'First name',
-                                    mustBeFilled: true,
-                                    ),
+                                  type: 'one-line',
+                                  inputType: TextInputType.name,
+                                  placeholder: 'First name',
+                                  mustBeFilled: true,
+                                ),
                                 const SizedBox(height: 20),
                                 InputType(
-                                    type: 'one-line',
-                                    inputType: TextInputType.name,
-                                    placeholder: 'Last name',
-                                    mustBeFilled: true,
-                                    ),
+                                  type: 'one-line',
+                                  inputType: TextInputType.name,
+                                  placeholder: 'Last name',
+                                  mustBeFilled: true,
+                                ),
                                 const SizedBox(height: 20),
                                 InputType(
-                                    type: 'one-line',
-                                    inputType: TextInputType.phone,
-                                    placeholder: 'Phone',
-                                    mustBeFilled: true,
-                                    ),
+                                  type: 'one-line',
+                                  inputType: TextInputType.phone,
+                                  placeholder: 'Phone',
+                                  mustBeFilled: true,
+                                ),
                                 const SizedBox(height: 20),
                                 InputType(
-                                    type: 'text-area',
-                                    inputType: TextInputType.multiline,
-                                    placeholder: 'Address',
-                                    mustBeFilled: true,
-                                    ),
+                                  type: 'text-area',
+                                  inputType: TextInputType.multiline,
+                                  placeholder: 'Address',
+                                  mustBeFilled: true,
+                                ),
                                 const SizedBox(height: 20),
                                 InputType(
-                                    type: 'calendar',
-                                    inputType: TextInputType.text,
-                                    placeholder: 'Birthday',
-                                    mustBeFilled: true,
-                                    calendarStart: DateTime(1940),
-                                    calendarEnd: DateTime(2010),
-                                    ),
+                                  type: 'calendar',
+                                  inputType: TextInputType.text,
+                                  placeholder: 'Birthday',
+                                  mustBeFilled: true,
+                                  calendarStart: DateTime(1940),
+                                  calendarEnd: DateTime(2010),
+                                ),
                                 const SizedBox(height: 20),
                                 InputType(
-                                    type: 'dropdown',
-                                    inputType: TextInputType.text,
-                                    placeholder: 'Gender',
-                                    mustBeFilled: true,
-                                    dropdownList: const [
-                                      DropdownMenuEntry(value: 1, label: 'F'),
-                                      DropdownMenuEntry(value: 2, label: 'M')
-                                    ],
-                                    dropdownWidth: context.width - 32 - 40,
-                                    ),
+                                  type: 'dropdown',
+                                  inputType: TextInputType.text,
+                                  placeholder: 'Gender',
+                                  mustBeFilled: true,
+                                  dropdownList: const [
+                                    DropdownMenuEntry(value: 1, label: 'F'),
+                                    DropdownMenuEntry(value: 2, label: 'M')
+                                  ],
+                                  dropdownWidth: context.width - 32 - 40,
+                                ),
                                 const SizedBox(height: 20),
                                 InputType(
-                                    type: 'multi-select',
-                                    inputType: TextInputType.text,
-                                    placeholder: 'Skin type',
-                                    mustBeFilled: true,
-                                    multiselectList: const [
-                                      DropdownMenuEntry(
-                                          value: 1, label: 'oily'),
-                                      DropdownMenuEntry(
-                                          value: 2, label: 'sensitive'),
-                                      DropdownMenuEntry(
-                                          value: 3, label: 'acne prone'),
-                                      DropdownMenuEntry(value: 4, label: 'dry'),
-                                      DropdownMenuEntry(
-                                          value: 5, label: 'combination'),
-                                      DropdownMenuEntry(
-                                          value: 6, label: 'scars')
-                                    ],
-                                    ),
+                                  type: 'multi-select',
+                                  inputType: TextInputType.text,
+                                  placeholder: 'Skin type',
+                                  mustBeFilled: true,
+                                  multiselectList: const [
+                                    DropdownMenuEntry(value: 1, label: 'oily'),
+                                    DropdownMenuEntry(
+                                        value: 2, label: 'sensitive'),
+                                    DropdownMenuEntry(
+                                        value: 3, label: 'acne prone'),
+                                    DropdownMenuEntry(value: 4, label: 'dry'),
+                                    DropdownMenuEntry(
+                                        value: 5, label: 'combination'),
+                                    DropdownMenuEntry(value: 6, label: 'scars')
+                                  ],
+                                ),
                                 const SizedBox(height: 20),
                                 InputType(
-                                    type: 'multi-select',
-                                    inputType: TextInputType.text,
-                                    placeholder: 'Hair type',
-                                    mustBeFilled: true,
-                                    multiselectList: const [
-                                      DropdownMenuEntry(
-                                          value: 1, label: 'straight'),
-                                      DropdownMenuEntry(
-                                          value: 2, label: 'wavy'),
-                                      DropdownMenuEntry(
-                                          value: 3, label: 'curly'),
-                                      DropdownMenuEntry(
-                                          value: 4, label: 'coily'),
-                                      DropdownMenuEntry(
-                                          value: 5, label: 'thin'),
-                                      DropdownMenuEntry(
-                                          value: 6, label: 'thick'),
-                                      DropdownMenuEntry(value: 7, label: 'dry'),
-                                      DropdownMenuEntry(
-                                          value: 8, label: 'oily'),
-                                      DropdownMenuEntry(
-                                          value: 9, label: 'frizzy'),
-                                      DropdownMenuEntry(
-                                          value: 10, label: 'dandruff'),
-                                      DropdownMenuEntry(
-                                          value: 11, label: 'dyed')
-                                    ],
-                                    ),
+                                  type: 'multi-select',
+                                  inputType: TextInputType.text,
+                                  placeholder: 'Hair type',
+                                  mustBeFilled: true,
+                                  multiselectList: const [
+                                    DropdownMenuEntry(
+                                        value: 1, label: 'straight'),
+                                    DropdownMenuEntry(value: 2, label: 'wavy'),
+                                    DropdownMenuEntry(value: 3, label: 'curly'),
+                                    DropdownMenuEntry(value: 4, label: 'coily'),
+                                    DropdownMenuEntry(value: 5, label: 'thin'),
+                                    DropdownMenuEntry(value: 6, label: 'thick'),
+                                    DropdownMenuEntry(value: 7, label: 'dry'),
+                                    DropdownMenuEntry(value: 8, label: 'oily'),
+                                    DropdownMenuEntry(
+                                        value: 9, label: 'frizzy'),
+                                    DropdownMenuEntry(
+                                        value: 10, label: 'dandruff'),
+                                    DropdownMenuEntry(value: 11, label: 'dyed')
+                                  ],
+                                ),
                                 const SizedBox(height: 20),
                                 InputType(
-                                    type: 'multi-select',
-                                    inputType: TextInputType.text,
-                                    placeholder: 'Allergies',
-                                    mustBeFilled: true,
-                                    multiselectList: const [
-                                      DropdownMenuEntry(value: 1, label: 'a'),
-                                      DropdownMenuEntry(value: 2, label: 'b'),
-                                      DropdownMenuEntry(value: 3, label: 'c'),
-                                      DropdownMenuEntry(value: 4, label: 'd'),
-                                      DropdownMenuEntry(value: 5, label: 'e'),
-                                      DropdownMenuEntry(value: 6, label: 'f')
-                                    ],
-                                    ),
+                                  type: 'multi-select',
+                                  inputType: TextInputType.text,
+                                  placeholder: 'Allergies',
+                                  mustBeFilled: true,
+                                  multiselectList: const [
+                                    DropdownMenuEntry(value: 1, label: 'a'),
+                                    DropdownMenuEntry(value: 2, label: 'b'),
+                                    DropdownMenuEntry(value: 3, label: 'c'),
+                                    DropdownMenuEntry(value: 4, label: 'd'),
+                                    DropdownMenuEntry(value: 5, label: 'e'),
+                                    DropdownMenuEntry(value: 6, label: 'f')
+                                  ],
+                                ),
                                 const SizedBox(height: 20),
                                 InputType(
-                                    type: 'multi-select',
-                                    inputType: TextInputType.text,
-                                    placeholder: 'Preferences',
-                                    mustBeFilled: true,
-                                    multiselectList: const [
-                                      DropdownMenuEntry(
-                                          value: 1, label: 'floral'),
-                                      DropdownMenuEntry(
-                                          value: 2, label: 'fruity'),
-                                      DropdownMenuEntry(
-                                          value: 3, label: 'sweet'),
-                                      DropdownMenuEntry(
-                                          value: 4, label: 'fresh'),
-                                      DropdownMenuEntry(
-                                          value: 5, label: 'spiced'),
-                                      DropdownMenuEntry(
-                                          value: 6, label: 'oriental'),
-                                      DropdownMenuEntry(
-                                          value: 7, label: 'musky'),
-                                      DropdownMenuEntry(
-                                          value: 8, label: 'woody')
-                                    ],
-                                    ),
+                                  type: 'multi-select',
+                                  inputType: TextInputType.text,
+                                  placeholder: 'Preferences',
+                                  mustBeFilled: true,
+                                  multiselectList: const [
+                                    DropdownMenuEntry(
+                                        value: 1, label: 'floral'),
+                                    DropdownMenuEntry(
+                                        value: 2, label: 'fruity'),
+                                    DropdownMenuEntry(value: 3, label: 'sweet'),
+                                    DropdownMenuEntry(value: 4, label: 'fresh'),
+                                    DropdownMenuEntry(
+                                        value: 5, label: 'spiced'),
+                                    DropdownMenuEntry(
+                                        value: 6, label: 'oriental'),
+                                    DropdownMenuEntry(value: 7, label: 'musky'),
+                                    DropdownMenuEntry(value: 8, label: 'woody')
+                                  ],
+                                ),
                               ],
                             )),
                             const SizedBox(height: 20),
@@ -291,7 +281,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                                             text: 'Yes, cancel',
                                                             color: red5,
                                                             type: "primary",
-                                                            onPressed: () => Get.to(() => ProfileScreen(isLogged: true,)))),
+                                                            onPressed: () =>
+                                                                Get.to(() =>
+                                                                    const ProfileScreen()))),
                                                     const SizedBox(width: 12),
                                                     SizedBox(
                                                         width:
@@ -321,7 +313,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                         text: 'Save',
                                         color: blue7,
                                         type: "primary",
-                                        onPressed: () => Get.to(() => ProfileScreen(isLogged: true,))))
+                                        onPressed: () => Get.to(
+                                            () => const ProfileScreen())))
                               ],
                             )
                           ]))

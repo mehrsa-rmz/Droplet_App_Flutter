@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/bindings/general_bindings.dart';
-import 'package:flutter_application/features/explore/screens/explore.dart';
 import 'package:flutter_application/routes/app_routes.dart';
+import 'package:flutter_application/utils/constants/colors.dart';
 import 'package:get/get.dart';
 
 class App extends StatelessWidget {
@@ -15,7 +15,7 @@ class App extends StatelessWidget {
       getPages: AppRoutes.pages,
       
       /// Show Loader or Circular Progress Indicator meanwhile Authentication Repository is deciding to show relevant screen.
-      home: const ExploreScreen() //Scaffold(backgroundColor: blue7, body: Center(child: CircularProgressIndicator(color: white1))),
+      home: Scaffold(backgroundColor: blue7, body: Center(child: CircularProgressIndicator(color: white1))),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:animated_rating_stars/animated_rating_stars.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/features/authentication/screens/login/login.dart';
@@ -12,9 +13,7 @@ import 'package:flutter_application/common/widgets/navbar.dart';
 import 'package:get/get.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
-  const ProductDetailsScreen({super.key, this.isLogged = false});
-
-  final bool isLogged;
+  const ProductDetailsScreen({super.key});
 
   @override
   State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
@@ -50,6 +49,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    User? user = FirebaseAuth.instance.currentUser;
     return Scaffold(
         bottomNavigationBar: const BottomNavBar(selectedOption: 'products',),
         body: Container(
@@ -244,7 +244,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     const SizedBox(
                       height: 20,
                     ),
-                    widget.isLogged
+                    user != null
                         ? Column(
                             children: [
                               testerLimitReached
@@ -492,12 +492,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     const SizedBox(
                       height: 20,
                     ),
-                    if (!widget.isLogged)
+                    if (user == null)
                       ButtonType(
                           text: 'Login to leave review',
                           color: blue7,
                           type: 'primary'),
-                    if (widget.isLogged)
+                    if (user != null)
                       ButtonType(
                         text: 'Leave review',
                         color: blue7,
