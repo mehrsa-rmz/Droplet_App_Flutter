@@ -13,6 +13,8 @@ class FavoriteModel {
     required this.product
   });
 
+  String get customerId => user.id;
+
   static FavoriteModel empty() => FavoriteModel(id: '', user: UserModel.empty(), product: ProductModel.empty());
   
   // Convert to JSON structure for Firebase
@@ -25,7 +27,7 @@ class FavoriteModel {
   }
 
   // Create a model from Firebase document
-   static Future<FavoriteModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
+  static Future<FavoriteModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
     if (document.data() != null) {
       final data = document.data()!;
       final userId = data['customerId'] as String;
@@ -53,5 +55,4 @@ class FavoriteModel {
       return FavoriteModel.empty();
     }
   }
-
 }

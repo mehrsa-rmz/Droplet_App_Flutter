@@ -1,4 +1,4 @@
-import 'package:flutter_application/features/products/models/condition_model.dart';
+import 'package:flutter_application/features/conditions/models/condition_model.dart';
 import 'package:flutter_application/features/products/models/product_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

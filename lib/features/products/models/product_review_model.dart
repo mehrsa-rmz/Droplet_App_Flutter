@@ -19,12 +19,21 @@ class ProductReviewModel {
     this.message,
   });
 
+  String get productId => product.id;
+
   /// Create Empty func for clean code
-  static ProductReviewModel empty() => ProductReviewModel(id: '', user: UserModel.empty(), product: ProductModel.empty(), rating: 5, timestamp: DateTime.now(), message: '');
+  static ProductReviewModel empty() => ProductReviewModel(
+    id: '', 
+    user: UserModel.empty(), 
+    product: ProductModel.empty(), 
+    rating: 5, 
+    timestamp: DateTime.now(), 
+    message: ''
+  );
 
   // Convert to JSON structure for Firebase
   Map<String, dynamic> toJson() {
-    return{
+    return {
       'itemID': id,
       'productId': product.id,
       'customerId': user.id,
@@ -55,13 +64,13 @@ class ProductReviewModel {
       final product = ProductModel.fromSnapshot(productDoc);
 
       return ProductReviewModel(
-        id: document.id, 
+        id: document.id,
         product: product,
         user: user,
         rating: data['productReviewRating'] as double,
-        timestamp: data['productReviewTimestamp'] as DateTime,
+        timestamp: (data['productReviewTimestamp'] as Timestamp).toDate(),
         message: data['productReviewMessage'] as String,
-        );
+      );
     } else {
       return ProductReviewModel.empty();
     }

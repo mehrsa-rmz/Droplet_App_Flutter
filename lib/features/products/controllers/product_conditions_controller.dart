@@ -1,51 +1,20 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import '../../../data/repositories/product_repository.dart';
 import '../models/product_condition_model.dart';
 
-class ProductConditionController extends GetxController {
-  static ProductConditionController get instance => Get.find();
+class ProductConditionsController extends GetxController {
+  static ProductConditionsController get instance => Get.find();
 
-  final CollectionReference<Map<String, dynamic>> collection =
-      FirebaseFirestore.instance.collection('ProductsConditions');
+  final ProductRepository _repository = ProductRepository();
 
-  RxList<ProductConditionModel> productConditions = RxList<ProductConditionModel>();
+  var productConditions = <ProductConditionModel>[].obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    bindProductConditions();
-  }
-
-  Future<void> addProductCondition(ProductConditionModel productCondition) async {
+  Future<void> fetchProductConditions(String productId) async {
     try {
-      await collection.add(productCondition.toJson());
+      final conditions = await _repository.fetchProductConditions(productId);
+      productConditions.assignAll(conditions);
     } catch (e) {
-      print("Error adding product condition: $e");
+      print('Error fetching product conditions: $e');
     }
-  }
-
-  Future<void> updateProductCondition(String id, ProductConditionModel productCondition) async {
-    try {
-      await collection.doc(id).update(productCondition.toJson());
-    } catch (e) {
-      print("Error updating product condition: $e");
-    }
-  }
-
-  Future<void> deleteProductCondition(String id) async {
-    try {
-      await collection.doc(id).delete();
-    } catch (e) {
-      print("Error deleting product condition: $e");
-    }
-  }
-
-  void bindProductConditions() {
-    collection.snapshots().listen((snapshot) async {
-      List<ProductConditionModel> pcModels = await Future.wait(snapshot.docs.map((doc) async {
-        return await ProductConditionModel.fromSnapshot(doc);
-      }).toList());
-      productConditions.assignAll(pcModels);
-    });
   }
 }

@@ -10,6 +10,10 @@ class ProductModel {
   final double price;
   final int promotion;
   int stock;
+  int reviewsNo;
+  double rating;
+  bool favorite;
+  bool outOfStock;
 
   ProductModel({
     required this.id,
@@ -21,12 +25,29 @@ class ProductModel {
     required this.price,
     required this.promotion,
     required this.stock,
+    required this.reviewsNo,
+    required this.rating,
+    required this.favorite,
+    required this.outOfStock,
   });
 
-  /// Create Empty func for clean code
-  static ProductModel empty() => ProductModel(id: '', name: '', category: 'all', gender: 'all', ageGroup: 'all', isHypoallergenic: false, price: 0, promotion: 0, stock: 0);
+  get noOfOrders => null;
 
-  /// Json Format
+  static ProductModel empty() => ProductModel(
+      id: '',
+      name: '',
+      category: 'all',
+      gender: 'all',
+      ageGroup: 'all',
+      isHypoallergenic: false,
+      price: 0,
+      promotion: 0,
+      stock: 0,
+      reviewsNo: 0,
+      rating: 0.0,
+      favorite: false,
+      outOfStock: false);
+
   toJson() {
     return {
       'itemID': id,
@@ -38,10 +59,13 @@ class ProductModel {
       'productPrice': price,
       'productSpecificPromotion': promotion,
       'productStock': stock,
+      'productReviewsNo': reviewsNo,
+      'productRating': rating,
+      'productFavorite': favorite,
+      'productOutOfStock': outOfStock,
     };
   }
 
-  /// Map Json oriented document snapshot from Firebase to Model
   factory ProductModel.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) {
     final data = document.data()!;
     return ProductModel(
@@ -54,10 +78,13 @@ class ProductModel {
       price: data['productPrice'] as double,
       promotion: data['productSpecificPromotion'] as int,
       stock: data['productStock'] as int,
+      reviewsNo: data['productReviewsNo'] as int,
+      rating: data['productRating'] as double,
+      favorite: data['productFavorite'] as bool,
+      outOfStock: data['productOutOfStock'] as bool,
     );
   }
 
-  // Map Json-oriented document snapshot from Firebase to Model
   factory ProductModel.fromQuerySnapshot(QueryDocumentSnapshot<Object?> document) {
     final data = document.data() as Map<String, dynamic>;
     return ProductModel(
@@ -70,6 +97,12 @@ class ProductModel {
       price: data['productPrice'] as double,
       promotion: data['productSpecificPromotion'] as int,
       stock: data['productStock'] as int,
+      reviewsNo: data['productReviewsNo'] as int,
+      rating: data['productRating'] as double,
+      favorite: data['productFavorite'] as bool,
+      outOfStock: data['productOutOfStock'] as bool,
     );
   }
+
+  where(bool Function(dynamic product) param0) {}
 }

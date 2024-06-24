@@ -1,51 +1,29 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import '../../../data/repositories/product_repository.dart';
 import '../models/product_review_model.dart';
 
-class ProductReviewController extends GetxController {
-  static ProductReviewController get instance => Get.find();
+class ProductReviewsController extends GetxController {
+  static ProductReviewsController get instance => Get.find();
 
-  final CollectionReference<Map<String, dynamic>> collection =
-      FirebaseFirestore.instance.collection('ProductReviews');
+  final ProductRepository _repository = ProductRepository();
 
-  RxList<ProductReviewModel> productReviews = RxList<ProductReviewModel>();
+  var productReviews = <ProductReviewModel>[].obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    bindProductReviews();
-  }
-
-  Future<void> addProductReview(ProductReviewModel productReview) async {
+  Future<void> fetchProductReviews(String productId) async {
     try {
-      await collection.add(productReview.toJson());
+      final reviews = await _repository.fetchProductReviews(productId);
+      productReviews.assignAll(reviews);
     } catch (e) {
-      print("Error adding product review: $e");
+      print('Error fetching product reviews: $e');
     }
   }
 
-  Future<void> updateProductReview(String id, ProductReviewModel productReview) async {
+  Future<void> addProductReview(ProductReviewModel review) async {
     try {
-      await collection.doc(id).update(productReview.toJson());
+      await _repository.addProductReview(review);
+      fetchProductReviews(review.productId);
     } catch (e) {
-      print("Error updating product review: $e");
+      print('Error adding product review: $e');
     }
-  }
-
-  Future<void> deleteProductReview(String id) async {
-    try {
-      await collection.doc(id).delete();
-    } catch (e) {
-      print("Error deleting product review: $e");
-    }
-  }
-
-  void bindProductReviews() {
-    collection.snapshots().listen((snapshot) async {
-      List<ProductReviewModel> prModels = await Future.wait(snapshot.docs.map((doc) async {
-        return await ProductReviewModel.fromSnapshot(doc);
-      }).toList());
-      productReviews.assignAll(prModels);
-    });
   }
 }

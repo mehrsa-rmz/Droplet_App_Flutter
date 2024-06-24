@@ -1,4 +1,4 @@
-import 'package:flutter_application/features/products/models/ingredient_model.dart';
+import 'package:flutter_application/features/ingredients/models/ingredient_model.dart';
 import 'package:flutter_application/features/profile/models/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

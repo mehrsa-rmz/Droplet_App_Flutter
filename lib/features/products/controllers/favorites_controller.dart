@@ -1,51 +1,38 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import '../../../data/repositories/product_repository.dart';
 import '../models/favorites_model.dart';
 
 class FavoritesController extends GetxController {
   static FavoritesController get instance => Get.find();
 
-  final CollectionReference<Map<String, dynamic>> collection =
-      FirebaseFirestore.instance.collection('Favorites');
+  final ProductRepository _repository = ProductRepository();
 
-  RxList<FavoriteModel> favorites = RxList<FavoriteModel>();
+  var favorites = <FavoriteModel>[].obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    bindFavorites();
-  }
-
-  Future<void> addFavorite(FavoriteModel favorite) async {
+  Future<void> fetchFavorites(String customerId) async {
     try {
-      await collection.add(favorite.toJson());
-    } catch (e) {
-      print("Error adding favorite: $e");
-    }
-  }
-
-  Future<void> updateFavorite(String id, FavoriteModel favorite) async {
-    try {
-      await collection.doc(id).update(favorite.toJson());
-    } catch (e) {
-      print("Error updating favorite: $e");
-    }
-  }
-
-  Future<void> deleteFavorite(String id) async {
-    try {
-      await collection.doc(id).delete();
-    } catch (e) {
-      print("Error deleting favorite: $e");
-    }
-  }
-
-  void bindFavorites() {
-    collection.snapshots().listen((snapshot) async {
-      List<FavoriteModel> favs = await Future.wait(snapshot.docs.map((doc) async {
-        return await FavoriteModel.fromSnapshot(doc);
-      }).toList());
+      final favs = await _repository.fetchFavorites(customerId);
       favorites.assignAll(favs);
-    });
+    } catch (e) {
+      print('Error fetching favorites: $e');
+    }
+  }
+
+  Future<void> addToFavorites(FavoriteModel favorite) async {
+    try {
+      await _repository.addToFavorites(favorite);
+      fetchFavorites(favorite.customerId);
+    } catch (e) {
+      print('Error adding to favorites: $e');
+    }
+  }
+
+  Future<void> removeFromFavorites(String favoriteId) async {
+    try {
+      await _repository.removeFromFavorites(favoriteId);
+      fetchFavorites(favorites.firstWhere((fav) => fav.id == favoriteId).customerId);
+    } catch (e) {
+      print('Error removing from favorites: $e');
+    }
   }
 }
