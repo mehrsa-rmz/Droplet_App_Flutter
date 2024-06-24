@@ -48,7 +48,7 @@ class SignupController extends GetxController {
         firstName: firstName.text.trim(),
         lastName: lastName.text.trim(),
         birthday: null,
-        gender: null,
+        gender: '',
         phoneNo: '',
         address: '',
       );

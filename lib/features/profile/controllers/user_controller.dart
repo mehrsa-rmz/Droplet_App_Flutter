@@ -4,6 +4,7 @@ import 'package:flutter_application/data/repositories/authentication_repository.
 import 'package:get/get.dart';
 
 import '../../../common/widgets/loaders/circular_loader.dart';
+import '../../../data/repositories/user_repository.dart';
 import '../../../utils/helpers/network_manager.dart';
 import '../../../utils/popups/full_screen_loader.dart';
 import '../../../utils/popups/loaders.dart';
@@ -15,10 +16,7 @@ class UserController extends GetxController {
   static UserController get instance => Get.find();
 
   Rx<UserModel> user = UserModel.empty().obs;
-  final imageUploading = false.obs;
   final profileLoading = false.obs;
-  final profileImageUrl = ''.obs;
-  final hidePassword = false.obs;
   final verifyEmail = TextEditingController();
   final verifyPassword = TextEditingController();
   final userRepository = Get.put(UserRepository());
@@ -55,17 +53,14 @@ class UserController extends GetxController {
         if (userCredentials != null) {
           // Convert Name to First and Last Name
           final nameParts = UserModel.nameParts(userCredentials.user!.displayName ?? '');
-          final customUsername = UserModel.generateUsername(userCredentials.user!.displayName ?? '');
 
           // Map data
           final newUser = UserModel(
             id: userCredentials.user!.uid,
             firstName: nameParts[0],
             lastName: nameParts.length > 1 ? nameParts.sublist(1).join(' ') : "",
-            username: customUsername,
             email: userCredentials.user!.email ?? '',
-            phoneNumber: userCredentials.user!.phoneNumber ?? '',
-            profilePicture: userCredentials.user!.photoURL ?? '',
+            phoneNo: userCredentials.user!.phoneNumber ?? '',
           );
 
           // Save user data
@@ -89,115 +84,17 @@ class UserController extends GetxController {
     }
   }
 
-  /// Upload Profile Picture
-  uploadUserProfilePicture() async {
-    try {
-      final image = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 70, maxHeight: 512, maxWidth: 512);
-      if (image != null) {
-        imageUploading.value = true;
-        final uploadedImage = await userRepository.uploadImage('Users/Images/Profile/', image);
-        profileImageUrl.value = uploadedImage;
-        Map<String, dynamic> newImage = {'ProfilePicture': uploadedImage};
-        await userRepository.updateSingleField(newImage);
-        user.value.profilePicture = uploadedImage;
-        user.refresh();
-
-        imageUploading.value = false;
-        TLoaders.successSnackBar(title: 'Congratulations', message: 'Your Profile Image has been updated!');
-      }
-    } catch (e) {
-      imageUploading.value = false;
-      TLoaders.errorSnackBar(title: 'OhSnap', message: 'Something went wrong: $e');
-    }
-  }
-
-  /// Delete Account Warning
-  void deleteAccountWarningPopup() {
-    Get.defaultDialog(
-      contentPadding: const EdgeInsets.all(TSizes.md),
-      title: 'Delete Account',
-      middleText:
-          'Are you sure you want to delete your account permanently? This action is not reversible and all of your data will be removed permanently.',
-      confirm: ElevatedButton(
-        onPressed: () async => deleteUserAccount(),
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.red, side: const BorderSide(color: Colors.red)),
-        child: const Padding(padding: EdgeInsets.symmetric(horizontal: TSizes.lg), child: Text('Delete')),
-      ),
-      cancel: OutlinedButton(
-        child: const Text('Cancel'),
-        onPressed: () => Navigator.of(Get.overlayContext!).pop(),
-      ),
-    );
-  }
-
-  /// Delete User Account
-  void deleteUserAccount() async {
-    try {
-      TFullScreenLoader.openLoadingDialog('Processing', TImages.docerAnimation);
-
-      /// First re-authenticate user
-      final auth = AuthenticationRepository.instance;
-      final provider = auth.firebaseUser!.providerData.map((e) => e.providerId).first;
-      if (provider.isNotEmpty) {
-        // Re Verify Auth Email
-        if (provider == 'google.com') {
-          await auth.signInWithGoogle();
-          await auth.deleteAccount();
-          TFullScreenLoader.stopLoading();
-          Get.offAll(() => const LoginScreen());
-        } else if (provider == 'facebook.com') {
-          await auth.signInWithFacebook();
-          await auth.deleteAccount();
-          TFullScreenLoader.stopLoading();
-          Get.offAll(() => const LoginScreen());
-        } else if (provider == 'password') {
-          TFullScreenLoader.stopLoading();
-          Get.to(() => const ReAuthLoginForm());
-        }
-      }
-    } catch (e) {
-      TFullScreenLoader.stopLoading();
-      TLoaders.warningSnackBar(title: 'Oh Snap!', message: e.toString());
-    }
-  }
-
-  /// -- RE-AUTHENTICATE before deleting
-  Future<void> reAuthenticateEmailAndPasswordUser() async {
-    try {
-      TFullScreenLoader.openLoadingDialog('Processing', TImages.docerAnimation);
-
-      //Check Internet
-      final isConnected = await NetworkManager.instance.isConnected();
-      if (!isConnected) {
-        TFullScreenLoader.stopLoading();
-        return;
-      }
-
-      if (!reAuthFormKey.currentState!.validate()) {
-        TFullScreenLoader.stopLoading();
-        return;
-      }
-
-      await AuthenticationRepository.instance.reAuthenticateWithEmailAndPassword(verifyEmail.text.trim(), verifyPassword.text.trim());
-      await AuthenticationRepository.instance.deleteAccount();
-      TFullScreenLoader.stopLoading();
-      Get.offAll(() => const LoginScreen());
-    } catch (e) {
-      TFullScreenLoader.stopLoading();
-      TLoaders.warningSnackBar(title: 'Oh Snap!', message: e.toString());
-    }
-  }
 
   /// Logout Loader Function
   logout() {
     try {
       Get.defaultDialog(
-        contentPadding: const EdgeInsets.all(TSizes.md),
+        contentPadding: const EdgeInsets.all(16),
         title: 'Logout',
         middleText: 'Are you sure you want to Logout?',
         confirm: ElevatedButton(
           child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: TSizes.lg),
+            padding: EdgeInsets.symmetric(horizontal: 24),
             child: Text('Confirm'),
           ),
           onPressed: () async {
