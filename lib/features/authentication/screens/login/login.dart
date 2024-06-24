@@ -16,7 +16,7 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(LoginController(), permanent: true);
+    final controller = Get.put(LoginController());
     return Scaffold(
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16),
