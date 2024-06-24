@@ -92,7 +92,7 @@ class LoginScreen extends StatelessWidget {
                           text: 'Forgot password?',
                           color: blue7,
                           type: 'tertiary',
-                          onPressed: () => Get.to(() => const ResetScreen()),
+                          onPressed: () => Get.off(() => const ResetScreen()),
                         ),
                       ],
                     ),

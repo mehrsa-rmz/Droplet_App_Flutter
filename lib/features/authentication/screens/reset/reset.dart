@@ -83,7 +83,7 @@ class ResetScreen extends StatelessWidget {
                         onPressed: () {
                           // Adding debug log
                           debugPrint('Navigating to LoginScreen from ResetScreen');
-                          Get.offAll(() => const LoginScreen());
+                          Get.off(() => const LoginScreen());
                         },
                       ),
                     ],
