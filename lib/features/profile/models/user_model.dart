@@ -1,3 +1,4 @@
+import 'package:flutter_application/features/order/models/cart_model.dart';
 import 'package:flutter_application/utils/formatters/formatter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -7,11 +8,11 @@ class UserModel {
   final String email;
   String firstName;
   String lastName;
-  DateTime? birthday;
+  String? birthday;
   String? gender;
   String? phoneNo;
   String? address;
-  //final CartModel? cart; //TODO
+  final CartModel? cart; //TODO
 
   UserModel({
     required this.id,
@@ -21,16 +22,15 @@ class UserModel {
     this.birthday,
     this.gender,
     this.phoneNo,
-    this.address
-    //this.cart, //TODO
+    this.address,
+    this.cart, //TODO
   });
 
   String get fullName => '$firstName $lastName';
   String get formattedPhoneNo => TFormatter.formatPhoneNumber(phoneNo!);
-  String get formattedBirthday => TFormatter.formatDate(birthday!);
   static List<String> nameParts(fullName) => fullName.split(" ");
   
-  static UserModel empty() => UserModel(id: '', email: '', firstName: '', lastName: '', birthday: DateTime.now(), gender: 'all', phoneNo: '', address: '');
+  static UserModel empty() => UserModel(id: '', email: '', firstName: '', lastName: '', birthday: '', gender: 'all', phoneNo: '', address: '');
 
   // Convert to JSON structure for Firebase
   Map<String, dynamic> toJson() {
@@ -46,6 +46,10 @@ class UserModel {
     };
   }
 
+  String getId(){
+    return id.toString();
+  }
+
   // Create a model from Firebase document
   factory UserModel.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) {
     if (document.data() != null) {
@@ -55,7 +59,7 @@ class UserModel {
         email: data['email'] as String,
         firstName: data['customerFirstName'] as String,
         lastName: data['customerLastName'] as String,
-        birthday: data['birthday'] as DateTime,
+        birthday: data['birthday'] as String,
         gender: data['gender'] as String,
         phoneNo: data['phoneNo'] as String,
         address: data['address'] as String,

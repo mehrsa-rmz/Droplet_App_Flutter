@@ -42,7 +42,7 @@ class _ProductCategoriesScreenState extends State<ProductCategoriesScreen> {
                             padding: const EdgeInsets.all(0),
                             overlayColor: const Color.fromARGB(0, 255, 255, 255),
                           ),
-                          onPressed: () => Get.to(() => ProductsScreen(category: 'skin',)),
+                          onPressed: () => Get.to(() => ProductsScreen(category: 'Skin',)),
                           child: Container(
                               width: context.width / 2 - 16 - 8,
                               padding: const EdgeInsets.all(12),
@@ -78,7 +78,7 @@ class _ProductCategoriesScreenState extends State<ProductCategoriesScreen> {
                             padding: const EdgeInsets.all(0),
                             overlayColor: const Color.fromARGB(0, 255, 255, 255),
                           ),
-                          onPressed: () => Get.to(() => ProductsScreen(category: 'hair',)),
+                          onPressed: () => Get.to(() => ProductsScreen(category: 'Hair',)),
                           child: Container(
                               width: context.width / 2 - 16 - 8,
                               padding: const EdgeInsets.all(12),
@@ -119,7 +119,7 @@ class _ProductCategoriesScreenState extends State<ProductCategoriesScreen> {
                             padding: const EdgeInsets.all(0),
                             overlayColor: const Color.fromARGB(0, 255, 255, 255),
                           ),
-                          onPressed: () => Get.to(() => ProductsScreen(category: 'body',)),
+                          onPressed: () => Get.to(() => ProductsScreen(category: 'Body',)),
                           child: Container(
                               width: context.width / 2 - 16 - 8,
                               padding: const EdgeInsets.all(12),
@@ -155,7 +155,7 @@ class _ProductCategoriesScreenState extends State<ProductCategoriesScreen> {
                             padding: const EdgeInsets.all(0),
                             overlayColor: const Color.fromARGB(0, 255, 255, 255),
                           ),
-                          onPressed: () => Get.to(() => ProductsScreen(category: 'perfume',)),
+                          onPressed: () => Get.to(() => ProductsScreen(category: 'Perfume',)),
                           child: Container(
                               width: context.width / 2 - 16 - 8,
                               padding: const EdgeInsets.all(12),

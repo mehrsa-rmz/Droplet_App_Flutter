@@ -3,18 +3,12 @@ import 'package:get/get.dart';
 import '../models/ingredient_model.dart';
 
 class IngredientController extends GetxController {
-  static IngredientController get instance => Get.find();
+  static IngredientController get instance => Get.put(IngredientController());
 
   final CollectionReference<Map<String, dynamic>> collection =
       FirebaseFirestore.instance.collection('Ingredients');
 
   RxList<IngredientModel> ingredients = RxList<IngredientModel>();
-
-  @override
-  void onInit() {
-    super.onInit();
-    ingredients.bindStream(getIngredients());
-  }
 
   Future<void> addIngredient(IngredientModel ingredient) async {
     try {
@@ -40,11 +34,18 @@ class IngredientController extends GetxController {
     }
   }
 
-  Stream<List<IngredientModel>> getIngredients() {
-    return collection.snapshots().map((snapshot) {
-      return snapshot.docs
-          .map((doc) => IngredientModel.fromSnapshot(doc))
-          .toList();
-    });
+  Future<List<IngredientModel>> getIngredients() async {
+    try {
+      final querySnapshot = await collection.get();
+      List<IngredientModel> ingredients = await Future.wait(
+        querySnapshot.docs.map((doc) async {
+          return IngredientModel.fromSnapshot(doc);
+        }).toList()
+      );
+      return ingredients;
+    } catch (e) {
+      print("Error fetching ingredients: $e");
+      return [];
+    }
   }
 }

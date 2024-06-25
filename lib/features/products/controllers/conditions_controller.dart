@@ -3,18 +3,12 @@ import 'package:get/get.dart';
 import '../models/condition_model.dart';
 
 class ConditionController extends GetxController {
-  static ConditionController get instance => Get.find();
+  static ConditionController get instance => Get.put(ConditionController());
 
   final CollectionReference<Map<String, dynamic>> collection =
       FirebaseFirestore.instance.collection('Conditions');
 
   RxList<ConditionModel> conditions = RxList<ConditionModel>();
-
-  @override
-  void onInit() {
-    super.onInit();
-    conditions.bindStream(getConditions());
-  }
 
   Future<void> addCondition(ConditionModel condition) async {
     try {
@@ -40,11 +34,18 @@ class ConditionController extends GetxController {
     }
   }
 
-  Stream<List<ConditionModel>> getConditions() {
-    return collection.snapshots().map((snapshot) {
-      return snapshot.docs
-          .map((doc) => ConditionModel.fromSnapshot(doc))
-          .toList();
-    });
+  Future<List<ConditionModel>> getConditions() async {
+    try {
+      final querySnapshot = await collection.get();
+      List<ConditionModel> conditions = await Future.wait(
+        querySnapshot.docs.map((doc) async {
+          return ConditionModel.fromSnapshot(doc);
+        }).toList()
+      );
+      return conditions;
+    } catch (e) {
+      print("Error fetching conditions: $e");
+      return [];
+    }
   }
 }

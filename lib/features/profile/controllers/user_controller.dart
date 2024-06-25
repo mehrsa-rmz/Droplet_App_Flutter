@@ -1,9 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/data/repositories/authentication_repository.dart';
 import 'package:get/get.dart';
-
-import '../../../common/widgets/loaders/circular_loader.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../utils/popups/loaders.dart';
 import '../models/user_model.dart';
@@ -24,6 +23,25 @@ class UserController extends GetxController {
   void onInit() {
     fetchUserRecord();
     super.onInit();
+  }
+
+  // Fetch a user by ID
+  static Future<UserModel?> fetchUserById(String userId) async {
+    try {
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('Customers')
+          .doc(userId)
+          .get();
+
+      if (docSnapshot.exists) {
+        return UserModel.fromSnapshot(docSnapshot);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching user: $e");
+      return null;
+    }
   }
 
   /// Fetch user record

@@ -1,33 +1,44 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_application/features/products/models/product_model.dart';
-import 'package:flutter_application/features/profile/models/user_model.dart';
 
 class ProductReviewModel {
   final String id;
-  final UserModel user;
-  final ProductModel product;
-  final double rating;
+  // final UserModel user;
+  // final ProductModel product;
+  final String productId;
+  final String userId;
+  final int rating;
   final String? message;
-  final DateTime timestamp;
+  final String timestamp;
 
   ProductReviewModel({
     required this.id,
-    required this.user,
-    required this.product,
+    // required this.user,
+    // required this.product,
+    required this.productId,
+    required this.userId,
     required this.rating,
     required this.timestamp,
     this.message,
   });
 
   /// Create Empty func for clean code
-  static ProductReviewModel empty() => ProductReviewModel(id: '', user: UserModel.empty(), product: ProductModel.empty(), rating: 5, timestamp: DateTime.now(), message: '');
+  //static ProductReviewModel empty() => ProductReviewModel(id: '', user: UserModel.empty(), product: ProductModel.empty(), rating: 5, timestamp: DateTime.now(), message: '');
+  static ProductReviewModel empty() => ProductReviewModel(id: '', userId: '', productId: '', rating: 5, timestamp: '', message: '');
 
+  // String getProductId(){
+  //   return product.id.toString();
+  // }
+
+  // String getUserId(){
+  //   return user.id.toString();
+  // }
+  
   // Convert to JSON structure for Firebase
   Map<String, dynamic> toJson() {
     return{
       'itemID': id,
-      'productId': product.id,
-      'customerId': user.id,
+      'productId': productId,
+      'customerId': userId,
       'productReviewRating': rating,
       'productReviewMessage': message,
       'productReviewTimestamp': timestamp,
@@ -38,30 +49,14 @@ class ProductReviewModel {
   static Future<ProductReviewModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
     if (document.data() != null) {
       final data = document.data()!;
-      final userId = data['customerId'] as String;
-      final productId = data['productId'] as String;
-      // Fetch user document
-      final userDoc = await FirebaseFirestore.instance
-          .collection('Customers')
-          .doc(userId)
-          .get();
-      final user = UserModel.fromSnapshot(userDoc);
-
-      // Fetch product document
-      final productDoc = await FirebaseFirestore.instance
-          .collection('Products')
-          .doc(productId)
-          .get();
-      final product = ProductModel.fromSnapshot(productDoc);
-
-      return ProductReviewModel(
-        id: document.id, 
-        product: product,
-        user: user,
-        rating: data['productReviewRating'] as double,
-        timestamp: data['productReviewTimestamp'] as DateTime,
+        return ProductReviewModel(
+        id: document.id,
+        userId: data['customerId'] as String,
+        productId: data['productId'] as String,
+        rating: data['productReviewRating'] as int,
+        timestamp: data['productReviewTimestamp'] as String,
         message: data['productReviewMessage'] as String,
-        );
+      );
     } else {
       return ProductReviewModel.empty();
     }

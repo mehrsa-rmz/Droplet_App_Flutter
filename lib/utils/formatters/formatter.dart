@@ -27,7 +27,29 @@ class TFormatter {
     return '$month $day${daySuffix(int.parse(day))} $year';
   }
 
+  static String formatTimestamp(int timestamp) {
+    // Convert timestamp to DateTime
+    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+
+    // Format DateTime to YYYY-MM-DD
+    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    String formattedDate = dateFormat.format(dateTime);
+
+    return formattedDate;
+  }
+
   static String formatPhoneNumber(String phoneNumber) {
     return '(${phoneNumber.substring(0,3)}) ${phoneNumber.substring(4,6)} ${phoneNumber.substring(7)}';
+  }
+
+  static int convertStringToTimestamp(String dateStr) {
+    // Parse the string to DateTime
+    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    DateTime dateTime = dateFormat.parse(dateStr);
+
+    // Convert DateTime to timestamp (in seconds since epoch)
+    int timestamp = dateTime.millisecondsSinceEpoch ~/ 1000;
+
+    return timestamp;
   }
 }

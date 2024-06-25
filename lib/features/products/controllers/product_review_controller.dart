@@ -3,17 +3,17 @@ import 'package:get/get.dart';
 import '../models/product_review_model.dart';
 
 class ProductReviewController extends GetxController {
-  static ProductReviewController get instance => Get.find();
+  static ProductReviewController get instance => Get.put(ProductReviewController());
 
   final CollectionReference<Map<String, dynamic>> collection =
-      FirebaseFirestore.instance.collection('ProductReviews');
+      FirebaseFirestore.instance.collection('ProductsReviews');
 
   RxList<ProductReviewModel> productReviews = RxList<ProductReviewModel>();
 
   @override
   void onInit() {
     super.onInit();
-    bindProductReviews();
+    bindProductsReviews();
   }
 
   Future<void> addProductReview(ProductReviewModel productReview) async {
@@ -40,12 +40,28 @@ class ProductReviewController extends GetxController {
     }
   }
 
-  void bindProductReviews() {
+  void bindProductsReviews() {
     collection.snapshots().listen((snapshot) async {
       List<ProductReviewModel> prModels = await Future.wait(snapshot.docs.map((doc) async {
         return await ProductReviewModel.fromSnapshot(doc);
       }).toList());
       productReviews.assignAll(prModels);
     });
+  }
+
+  // Function to fetch all ProductReviewModel items
+  Future<List<ProductReviewModel>> fetchAllProductsReviews() async {
+    try {
+      final querySnapshot = await collection.get();
+      List<ProductReviewModel> productReviews = await Future.wait(
+        querySnapshot.docs.map((doc) async {
+          return await ProductReviewModel.fromSnapshot(doc);
+        }).toList()
+      );
+      return productReviews;
+    } catch (e) {
+      print("Error fetching product reviews: $e");
+      return [];
+    }
   }
 }
