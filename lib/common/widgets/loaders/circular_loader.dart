@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 /// A circular loader widget with customizable foreground and background colors.
 class TCircularLoader extends StatelessWidget {
@@ -21,8 +22,11 @@ class TCircularLoader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle), // Circular background
-      child: Center(
-        child: CircularProgressIndicator(color: foregroundColor, backgroundColor: Colors.transparent), // Circular loader
+      child: const Center(
+        child: SpinKitFadingCircle(
+          color: Color(0xFFE6AB9E),
+          size: 80.0,
+        )
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_application/features/explore/screens/explore.dart';
+import 'package:flutter_application/features/products/controllers/favorites_controller.dart';
 import 'package:flutter_application/features/products/screens/favorites.dart';
 import 'package:flutter_application/features/order/screens/shopping_cart.dart';
 import 'package:flutter_application/features/products/screens/product_categories.dart';
@@ -22,6 +23,22 @@ class BottomNavBar extends StatefulWidget {
 
 class _BottomNavBarState extends State<BottomNavBar> {
   User? user = FirebaseAuth.instance.currentUser;
+  int cartItemsCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (user != null) {
+      FirebaseAuth.instance.authStateChanges().listen((User? user) {
+        setState(() {
+          this.user = user;
+          if (user != null) {
+            FavoritesController.instance.fetchCurrentUserFavorites();
+          }
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,32 +66,32 @@ class _BottomNavBarState extends State<BottomNavBar> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconBottomBar(
-                  text: "Explore",
-                  icon: CupertinoIcons.compass,
-                  selected: widget.selectedOption == 'explore',
-                  onPressed: () => Get.to(() => const ExploreScreen())),
+                text: "Explore",
+                icon: CupertinoIcons.compass,
+                selected: widget.selectedOption == 'explore',
+                onPressed: () => Get.to(() => const ExploreScreen())),
               IconBottomBar(
-                  text: "Products",
-                  icon: CupertinoIcons.square_grid_2x2,
-                  selected: widget.selectedOption == 'products',
-                  onPressed: () => Get.to(() => const ProductCategoriesScreen())),
+                text: "Products",
+                icon: CupertinoIcons.square_grid_2x2,
+                selected: widget.selectedOption == 'products',
+                onPressed: () => Get.to(() => const ProductCategoriesScreen())),
               IconBottomBar(
-                  text: "Profile",
-                  icon: CupertinoIcons.person,
-                  selected: widget.selectedOption == 'profile',
-                  onPressed: () => Get.to(() => const ProfileScreen())),
+                text: "Profile",
+                icon: CupertinoIcons.person,
+                selected: widget.selectedOption == 'profile',
+                onPressed: () => Get.to(() => const ProfileScreen())),
+Obx(() =>     IconBottomBarWithBadge(
+                text: "Favorites",
+                number: user != null ? FavoritesController.instance.favoriteCount.value : 0,
+                icon: CupertinoIcons.heart,
+                selected: widget.selectedOption == 'favorites',
+                onPressed: () => Get.to(() => const FavoritesScreen()),)),              
               IconBottomBarWithBadge(
-                  text: "Favorites",
-                  number: 2, // TODO
-                  icon: CupertinoIcons.heart,
-                  selected: widget.selectedOption == 'favorites',
-                  onPressed: () => Get.to(() => const FavoritesScreen())),
-              IconBottomBarWithBadge(
-                  text: "Cart",
-                  number: 2, // TODO
-                  icon: CupertinoIcons.cart,
-                  selected: widget.selectedOption == 'cart',
-                  onPressed: () => Get.to(() => const ShoppingCartScreen())),
+                text: "Cart",
+                number: cartItemsCount, // TODO
+                icon: CupertinoIcons.cart,
+                selected: widget.selectedOption == 'cart',
+                onPressed: () => Get.to(() => const ShoppingCartScreen())),
             ],
           ),
         ),

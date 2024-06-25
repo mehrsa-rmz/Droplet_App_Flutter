@@ -4,6 +4,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/features/authentication/screens/login/login.dart';
 import 'package:flutter_application/features/authentication/screens/signup/signup.dart';
+import 'package:flutter_application/features/products/controllers/favorites_controller.dart';
+import 'package:flutter_application/features/products/controllers/ingredinets_controller.dart';
+import 'package:flutter_application/features/products/controllers/product_controller.dart';
+import 'package:flutter_application/features/products/controllers/product_ingredients_controller.dart';
+import 'package:flutter_application/features/products/controllers/product_review_controller.dart';
+import 'package:flutter_application/features/products/models/favorites_model.dart';
+import 'package:flutter_application/features/products/models/ingredient_model.dart';
+import 'package:flutter_application/features/products/models/product_ingredient_model.dart';
+import 'package:flutter_application/features/products/models/product_model.dart';
+import 'package:flutter_application/features/products/models/product_review_model.dart';
+import 'package:flutter_application/features/profile/controllers/user_controller.dart';
+import 'package:flutter_application/features/profile/models/user_model.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
 import 'package:flutter_application/utils/constants/text_styles.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
@@ -13,32 +25,30 @@ import 'package:flutter_application/common/widgets/navbar.dart';
 import 'package:get/get.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
-  const ProductDetailsScreen({super.key});
+  const ProductDetailsScreen({super.key, required this.currentProductId});
+
+  final String currentProductId;
 
   @override
   State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
 }
 
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
-  final ScrollController scrollController = ScrollController();
-  final Map<String, dynamic> _product = {
-    'category': 'hair',
-    'sex': 'f',
-    'age': 'all',
-    'conditions': ['thin hair', 'dandruff'],
-    'hypoallergenic': true,
-    'name': 'Hair Mousse',
-    'price': 120.toDouble(),
-    'reviewsNo': 21,
-    'rating': 4.85,
+  User? user = FirebaseAuth.instance.currentUser;
+  UserModel? userModel;
+  Map<String, dynamic> currentProduct = {
+    'id': '',
+    'name': '',
+    'price': 0,
+    'reviewsNo': 0,
+    'rating': 0,
     'favorite': false,
     'outOfStock': false,
-    'noOfOrders': 10,
-    'promotion': -10,
-    'description':
-        'This is a very long message meant for completing the text area input in order to make it look better. This is a very long message meant for completing the text area input in order to make it look better.',
-    'ingredients': ['Water', 'Jojoba oil', 'Glycerin', 'Rose extract']
+    'promotion': 0,
+    'ingredients': [],
   };
+  
+  final ScrollController scrollController = ScrollController();
 
   int inCart = 0;
   bool testerAdded = false;
@@ -46,6 +56,93 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   bool expanded1 = false;
   bool expanded2 = false;
   bool expanded3 = false;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+    fetchProductData();
+  }
+
+  Future<void> fetchUserData() async {
+    if (user != null) {
+      String userId = user!.uid;
+      userModel = await UserController.fetchUserById(userId);
+
+      if (userModel != null) {
+        print('User fetched successfully: ${userModel!.fullName}');
+      } else {
+        print('User not found.');
+      }
+    } else {
+      print('No user is currently signed in.');
+    }
+  }
+
+  Future<void> fetchProductData() async {
+    // Fetching future data
+    List<ProductIngredientModel> productIngredients = await ProductIngredientController.instance.fetchAllProductIngredients();
+    List<FavoriteModel> favorites = await FavoritesController.instance.fetchCurrentUserFavorites();
+    List<ProductReviewModel> productReviews = await ProductReviewController.instance.fetchAllProductsReviews();
+    // TODO: fetch cart
+
+    // Fetching product data
+    ProductModel? fetchedProduct = await ProductController.instance.getProductById(widget.currentProductId);
+    List<IngredientModel> ingredients = await IngredientController.instance.getIngredients();
+
+    if (fetchedProduct == null) {
+      print('Product not found.');
+      return;
+    }
+
+    // Mapping ingredients to their IDs for quick lookup
+    Map<String, IngredientModel> ingredientMap = {for (var i in ingredients) i.id: i};
+
+    // Creating a map for product ingredients
+    Map<String, List<String>> productIngredientMap = {};
+    for (var pi in productIngredients) {
+      if (!productIngredientMap.containsKey(pi.productId)) {
+        productIngredientMap[pi.productId] = [];
+      }
+      productIngredientMap[pi.productId]!.add(pi.ingredientId);
+    }
+
+    // Creating a map for product reviews
+    Map<String, List<ProductReviewModel>> productReviewMap = {};
+    for (var pr in productReviews) {
+      if (!productReviewMap.containsKey(pr.productId)) {
+        productReviewMap[pr.productId] = [];
+      }
+      productReviewMap[pr.productId]!.add(pr);
+    }
+
+    // Creating a set for favorites
+    Set<String> isFavoriteMap = favorites.map((f) => f.productId).toSet();
+
+    // Constructing the current product data
+    String productId = fetchedProduct.id;
+    List<String> ingredientIds = productIngredientMap[productId] ?? [];
+
+    // Calculating reviews
+    List<ProductReviewModel> reviews = productReviewMap[productId] ?? [];
+    double rating = reviews.isNotEmpty
+        ? reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviews.length
+        : 0.0;
+
+    currentProduct = {
+      'id': productId,
+      'name': fetchedProduct.name,
+      'price': fetchedProduct.price,
+      'reviewsNo': reviews.length,
+      'rating': rating,
+      'favorite': isFavoriteMap.contains(productId),
+      'outOfStock': fetchedProduct.stock == 0,
+      'promotion': fetchedProduct.promotion,
+      'ingredients': ingredientIds.map((id) => ingredientMap[id]?.name ?? 'Unknown').toList(),
+    };
+
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +179,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               color: red5, size: 32),
                           onPressed: () => Get.back(),
                         ),
-                        Text(_product['name'], style: h4.copyWith(color: red5)),
+                        Text(currentProduct['name'], style: h5.copyWith(color: red5)),
                         const SizedBox(width: 32)
                       ],
                     ),
@@ -96,32 +193,55 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   children: [
                     Image.asset(product, height: 248),
                     const SizedBox(height: 32),
-                    _product['promotion'] == 0
+                    currentProduct['promotion'] == 0
                         ? Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                '${_product['price']} RON',
+                                '${currentProduct['price']} RON',
                                 style: h4.copyWith(color: black),
                               ),
                               IconButton(
-                                  icon: Icon(
-                                      _product['favorite']
-                                          ? CupertinoIcons.heart_fill
-                                          : CupertinoIcons.heart,
-                                      color: red5,
-                                      size: 40),
-                                  onPressed: () => setState(() {
-                                        _product['favorite'] =
-                                            !_product['favorite'];
-                                      }))
-                            ],
+                                icon: Icon(
+                                  currentProduct['favorite']
+                                      ? CupertinoIcons.heart_fill
+                                      : CupertinoIcons.heart,
+                                  color: red5,
+                                  size: 40),
+                                onPressed: user != null
+                                  ? () async {
+                                    setState(() {
+                                      currentProduct['favorite'] = !currentProduct['favorite'];
+                                    });
+
+                                    if (currentProduct['favorite'] == true) {
+                                      await FavoritesController.instance.addFavorite(
+                                        FavoriteModel(
+                                          id: 'FAV_${userModel!.firstName}_${currentProduct['id']}',
+                                          userId: userModel!.id,
+                                          productId: currentProduct['id'],
+                                        ),
+                                      );
+                                    } else {
+                                      String favToDeleteId = await FavoritesController.instance.getFavoriteDocumentIdByItemId('FAV_${userModel!.firstName}_${currentProduct['id']}') ?? '';
+                                      await FavoritesController.instance.deleteFavorite(favToDeleteId);
+                                    }
+
+                                    // Fetch the updated data after the operation
+                                    await fetchProductData();
+
+                                    // Update the state synchronously
+                                    setState(() {
+                                    });
+                                  }
+                                  : () {})
+                            ]
                           )
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${_product['price']} RON',
+                                '${currentProduct['price']} RON',
                                 style: h5Crossed.copyWith(color: black),
                               ),
                               const SizedBox(height: 8),
@@ -130,22 +250,46 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    _product['promotion'] < 0
-                                        ? '${_product['price'] + _product['promotion']} RON'
-                                        : '${_product['price'] * (100 - _product['promotion']) / 100} RON',
+                                    currentProduct['promotion'] < 0
+                                        ? '${currentProduct['price'] + currentProduct['promotion']} RON'
+                                        : '${currentProduct['price'] * (100 - currentProduct['promotion']) / 100} RON',
                                     style: h4.copyWith(color: red5),
                                   ),
                                   IconButton(
                                       icon: Icon(
-                                          _product['favorite']
+                                          currentProduct['favorite']
                                               ? CupertinoIcons.heart_fill
                                               : CupertinoIcons.heart,
                                           color: red5,
                                           size: 40),
-                                      onPressed: () => setState(() {
-                                            _product['favorite'] =
-                                                !_product['favorite'];
-                                          }))
+                                      onPressed: user != null
+                                      ? () async {
+                                        setState(() {
+                                          currentProduct['favorite'] = !currentProduct['favorite'];
+                                        });
+
+                                        if (currentProduct['favorite'] == true) {
+                                          await FavoritesController.instance.addFavorite(
+                                            FavoriteModel(
+                                              id: 'FAV_${userModel!.firstName}_${currentProduct['id']}',
+                                              userId: userModel!.id,
+                                              productId: currentProduct['id'],
+                                            ),
+                                          );
+                                        } else {
+                                          String favToDeleteId = await FavoritesController.instance.getFavoriteDocumentIdByItemId('FAV_${userModel!.firstName}_${currentProduct['id']}') ?? '';
+                                          await FavoritesController.instance.deleteFavorite(favToDeleteId);
+                                        }
+
+                                        // Fetch the updated data after the operation
+                                        await fetchProductData();
+
+                                        // Update the state synchronously
+                                        setState(() {
+                                        });
+                                      }
+                                      : () {}
+                                  )
                                 ],
                               ),
                             ],
@@ -155,7 +299,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ),
                     Row(
                       children: [
-                        Text('${_product['rating']}',
+                        Text('${currentProduct['rating']}',
                             style: h5.copyWith(color: grey8)),
                         const SizedBox(
                           width: 4,
@@ -163,7 +307,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         Icon(CupertinoIcons.star_fill, color: grey8, size: 24),
                         const SizedBox(width: 24),
                         ButtonType(
-                          text: 'See ${_product['reviewsNo']} reviews',
+                          text: 'See ${currentProduct['reviewsNo']} reviews',
                           color: red5,
                           type: 'tertiary',
                           onPressed: () {
@@ -183,7 +327,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       height: 20,
                     ),
                     inCart == 0
-                        ? (_product['outOfStock']
+                        ? (currentProduct['outOfStock']
                             ? ButtonType(
                                 text: 'Out of stock',
                                 color: red5,
@@ -396,7 +540,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               ],
                             ),
                             child: Text(
-                              _product['description'],
+                              'This is a very long message meant for completing the text area input in order to make it look better. This is a very long message meant for completing the text area input in order to make it look better.',
                               style: tParagraph.copyWith(color: grey8),
                             ))
                         : const SizedBox(
@@ -451,7 +595,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: _product['ingredients']
+                              children: currentProduct['ingredients']
                                   .expand<Widget>((ingredient) => [
                                         Text('- $ingredient',
                                             style:

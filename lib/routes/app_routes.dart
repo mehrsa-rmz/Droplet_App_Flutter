@@ -23,7 +23,6 @@ import 'package:flutter_application/features/products/screens/gift_guide_categor
 import 'package:flutter_application/features/products/screens/hypoallergenic.dart';
 import 'package:flutter_application/features/products/screens/personal_rec.dart';
 import 'package:flutter_application/features/products/screens/product_categories.dart';
-import 'package:flutter_application/features/products/screens/product_page.dart';
 import 'package:flutter_application/features/products/screens/products.dart';
 import 'package:flutter_application/features/profile/screens/edit_profile.dart';
 import 'package:flutter_application/features/profile/screens/loyalty_program.dart';
@@ -59,7 +58,7 @@ class AppRoutes {
     //Products
     GetPage(name: '/product_categories', page: () => const ProductCategoriesScreen()),
     GetPage(name: '/products', page: () => ProductsScreen()),
-    GetPage(name: '/product', page: () => const ProductDetailsScreen()),
+    //GetPage(name: '/product', page: () => const ProductDetailsScreen()),
     //Profile
     GetPage(name: '/profile', page: () => ProfileScreen()),
     GetPage(name: '/edit', page: () => const EditProfileScreen()),
