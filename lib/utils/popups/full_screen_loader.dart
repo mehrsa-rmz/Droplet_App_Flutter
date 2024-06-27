@@ -24,12 +24,12 @@ class TFullScreenLoader {
           child: Center(
             child: Column(
               children: [
-                const SizedBox(height: 200),
+                const SizedBox(height: 300),
                 const SpinKitFadingCircle(
                   color: Color(0xFFE6AB9E),
-                  size: 50.0,
+                  size: 100.0,
                 ),
-                const SizedBox(height: 100), // Adjust the spacing as needed
+                const SizedBox(height: 36), // Adjust the spacing as needed
                 TLoaderWidget(text: text),
               ],
             ),

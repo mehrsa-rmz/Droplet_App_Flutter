@@ -98,21 +98,21 @@ class FavoritesController extends GetxController {
   }
 
   Future<String?> getFavoriteDocumentIdByItemId(String itemId) async {
-  try {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('Favorites')
-        .where('itemID', isEqualTo: itemId)
-        .get();
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('Favorites')
+          .where('itemID', isEqualTo: itemId)
+          .get();
 
-    if (querySnapshot.docs.isNotEmpty) {
-      return querySnapshot.docs.first.id; // Get the document ID
-    } else {
-      print("No favorite found with itemID: $itemId");
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first.id; // Get the document ID
+      } else {
+        print("No favorite found with itemID: $itemId");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching favorite document ID: $e");
       return null;
     }
-  } catch (e) {
-    print("Error fetching favorite document ID: $e");
-    return null;
   }
-}
 }

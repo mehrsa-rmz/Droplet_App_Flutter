@@ -78,14 +78,6 @@ class CustomerSupportScreen extends StatelessWidget {
                         style: tParagraph.copyWith(
                             color: grey8, fontWeight: FontWeight.w700)),
                     TextSpan(
-                        text:
-                            '. If you need help outside this interval, you can chat with our AI Assistant, ',
-                        style: tParagraph.copyWith(color: grey8)),
-                    TextSpan(
-                        text: 'Drip, available 24/7',
-                        style: tParagraph.copyWith(
-                            color: grey8, fontWeight: FontWeight.w700)),
-                    TextSpan(
                         text: '.', style: tParagraph.copyWith(color: grey8)),
                   ])),
                   const SizedBox(
@@ -106,7 +98,7 @@ class CustomerSupportScreen extends StatelessWidget {
                       child: ButtonTypeIcon(
                           text: 'Call 123-456-789',
                           icon: CupertinoIcons.phone,
-                          color: pink5,
+                          color: red5,
                           type: 'primary',
                           onPressed: () => launchUrlString("tel://123456789"))),
                   const SizedBox(
@@ -134,25 +126,6 @@ class CustomerSupportScreen extends StatelessWidget {
                   ),
                   const SizedBox(
                     height: 24,
-                  ),
-                  Container(
-                    decoration: const BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color(0x59223944),
-                          spreadRadius: 0,
-                          blurRadius: 30,
-                          offset:
-                              Offset(0, 8), // (0, -8) for BottomBarNavigation
-                        )
-                      ],
-                    ),
-                    child: ButtonTypeIcon(
-                        text: 'Chat with Drip',
-                        icon: CupertinoIcons.chat_bubble,
-                        color: red5,
-                        type: 'primary',
-                        onPressed: (){}) // => Get.to(() => const ChatbotScreen())),
                   ),
                 ],
               ),

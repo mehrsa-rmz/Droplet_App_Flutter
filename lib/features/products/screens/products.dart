@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/features/authentication/screens/login/login.dart';
+import 'package:flutter_application/features/authentication/screens/signup/signup.dart';
 import 'package:flutter_application/features/products/controllers/conditions_controller.dart';
 import 'package:flutter_application/features/products/controllers/favorites_controller.dart';
 import 'package:flutter_application/features/products/controllers/ingredinets_controller.dart';
@@ -83,6 +85,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   Future<void> fetchAndCombineData() async {
+    // TODO: move these in the repositories
     // Fetching future data
     List<ProductConditionModel> productConditions = await ProductConditionController.instance.fetchAllProductConditions();
     List<ProductIngredientModel> productIngredients = await ProductIngredientController.instance.fetchAllProductIngredients();
@@ -492,7 +495,56 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                       _filterProducts();
                                     });
                                   }
-                                  : () {}
+                                  : () => showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        insetPadding: const EdgeInsets.all(16),
+                                        backgroundColor:white1,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        shadowColor: blue7dtrans,
+                                        title: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            IconButton(
+                                              icon: Icon(CupertinoIcons.xmark, color: red5, size: 24),
+                                              onPressed: () {Navigator.of(context).pop();},
+                                            ),
+                                            SizedBox(
+                                                width: context.width,
+                                                child: Text('Warning', textAlign: TextAlign.center, style: h5.copyWith(color: black))),
+                                            const SizedBox(height: 24),
+                                            SizedBox(
+                                                width: context.width,
+                                                child: Text( 'You must be logged in to add products to favorites', style: tParagraph.copyWith(color: grey8))),
+                                            const SizedBox(height: 24),
+                                            Row(children: [
+                                              SizedBox(
+                                                width: context.width /2 -6 -40,
+                                                child: ButtonTypeIcon(
+                                                  text: 'Login',
+                                                  icon: CupertinoIcons.square_arrow_right,
+                                                  color: blue7,
+                                                  type: 'primary',
+                                                  onPressed: () => Get.to(() => const LoginScreen()),
+                                                )
+                                              ),
+                                              const SizedBox(width: 12),
+                                              SizedBox(
+                                                width: context.width / 2 - 6 - 40,
+                                                child: ButtonTypeIcon(
+                                                  text: 'Sign up',
+                                                  icon: CupertinoIcons.person_badge_plus,
+                                                  color: red5,
+                                                  type: 'primary',
+                                                  onPressed: () => Get.to(() => const SignupScreen()),
+                                                )
+                                              )
+                                            ]),
+                                          ],
+                                        ),
+                                      );
+                                    }),
                                 ),
                             ],
                           ),

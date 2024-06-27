@@ -59,7 +59,7 @@ class GiftGuideCategoriesScreen extends StatelessWidget {
                     minimumSize: Size.zero,
                     overlayColor: const Color.fromARGB(0, 255, 255, 255),
                   ),
-                  onPressed: () => Get.to(() => GiftGuideScreen(sex: 'f',)),
+                  onPressed: () => Get.to(() => GiftGuideScreen(sex: 'F',)),
                   child: Container(
                       width: context.width,
                       alignment: Alignment.center,
@@ -91,7 +91,7 @@ class GiftGuideCategoriesScreen extends StatelessWidget {
                         minimumSize: Size.zero,
                         overlayColor: const Color.fromARGB(0, 255, 255, 255),
                         padding: const EdgeInsets.all(0)),
-                    onPressed: () => Get.to(() => GiftGuideScreen(sex: 'f', age: '16-24 years',)),
+                    onPressed: () => Get.to(() => GiftGuideScreen(sex: 'F', age: '16-24 y',)),
                     child: Container(
                         height: 156,
                         width: context.width / 3 - 64 / 3,
@@ -131,7 +131,7 @@ class GiftGuideCategoriesScreen extends StatelessWidget {
                         minimumSize: Size.zero,
                         overlayColor: const Color.fromARGB(0, 255, 255, 255),
                         padding: const EdgeInsets.all(0)),
-                    onPressed: () => Get.to(() => GiftGuideScreen(sex: 'f', age: '25-49 years',)),
+                    onPressed: () => Get.to(() => GiftGuideScreen(sex: 'F', age: '25-49 y',)),
                     child: Container(
                         height: 156,
                         width: context.width / 3 - 64 / 3,
@@ -171,7 +171,7 @@ class GiftGuideCategoriesScreen extends StatelessWidget {
                         minimumSize: Size.zero,
                         overlayColor: const Color.fromARGB(0, 255, 255, 255),
                         padding: const EdgeInsets.all(0)),
-                    onPressed: () => Get.to(() => GiftGuideScreen(sex: 'f', age: '50+ years',)),
+                    onPressed: () => Get.to(() => GiftGuideScreen(sex: 'F', age: '50+ years',)),
                     child: Container(
                         height: 156,
                         width: context.width / 3 - 64 / 3,
@@ -212,7 +212,7 @@ class GiftGuideCategoriesScreen extends StatelessWidget {
                     minimumSize: Size.zero,
                     overlayColor: const Color.fromARGB(0, 255, 255, 255),
                   ),
-                  onPressed: () => Get.to(() => GiftGuideScreen(sex: 'm',)),
+                  onPressed: () => Get.to(() => GiftGuideScreen(sex: 'M',)),
                   child: Container(
                       width: context.width,
                       alignment: Alignment.center,
@@ -244,7 +244,7 @@ class GiftGuideCategoriesScreen extends StatelessWidget {
                         minimumSize: Size.zero,
                         overlayColor: const Color.fromARGB(0, 255, 255, 255),
                         padding: const EdgeInsets.all(0)),
-                    onPressed: () => Get.to(() => GiftGuideScreen(sex: 'm', age: '16-24 years',)),
+                    onPressed: () => Get.to(() => GiftGuideScreen(sex: 'M', age: '16-24 y',)),
                     child: Container(
                         height: 156,
                         width: context.width / 3 - 64 / 3,
@@ -284,7 +284,7 @@ class GiftGuideCategoriesScreen extends StatelessWidget {
                         minimumSize: Size.zero,
                         overlayColor: const Color.fromARGB(0, 255, 255, 255),
                         padding: const EdgeInsets.all(0)),
-                    onPressed: () => Get.to(() => GiftGuideScreen(sex: 'm', age: '25-49 years',)),
+                    onPressed: () => Get.to(() => GiftGuideScreen(sex: 'M', age: '25-49 y',)),
                     child: Container(
                         height: 156,
                         width: context.width / 3 - 64 / 3,
@@ -324,7 +324,7 @@ class GiftGuideCategoriesScreen extends StatelessWidget {
                         minimumSize: Size.zero,
                         overlayColor: const Color.fromARGB(0, 255, 255, 255),
                         padding: const EdgeInsets.all(0)),
-                    onPressed:() => Get.to(() => GiftGuideScreen(sex: 'm', age: '50+ years',)),
+                    onPressed:() => Get.to(() => GiftGuideScreen(sex: 'M', age: '50+ years',)),
                     child: Container(
                         height: 156,
                         width: context.width / 3 - 64 / 3,

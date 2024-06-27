@@ -1,38 +1,38 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class PromotionOrderModel {
+class PromotionCartModel {
   final String id;
   final String promotionId;
-  final String orderId;
+  final String cartId;
 
-  PromotionOrderModel({
+  PromotionCartModel({
     required this.id,
     required this.promotionId,
-    required this.orderId,
+    required this.cartId,
   });
 
-  static PromotionOrderModel empty() => PromotionOrderModel(id: '', promotionId: '', orderId: '');
+  static PromotionCartModel empty() => PromotionCartModel(id: '', promotionId: '', cartId: '');
   
   // Convert to JSON structure for Firebase
   Map<String, dynamic> toJson() {
     return{
       'itemID': id,
       'promotionId': promotionId,
-      'orderId': orderId
+      'cartId': cartId
     };
   }
 
   // Create a model from Firebase document
-   static Future<PromotionOrderModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
+   static Future<PromotionCartModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
     if (document.data() != null) {
       final data = document.data()!;
-      return PromotionOrderModel(
+      return PromotionCartModel(
         id: document.id,
         promotionId: data['productId'] as String,
-        orderId: data['orderId'] as String
+        cartId: data['cartId'] as String
         );
     } else {
-      return PromotionOrderModel.empty();
+      return PromotionCartModel.empty();
     }
   }
 

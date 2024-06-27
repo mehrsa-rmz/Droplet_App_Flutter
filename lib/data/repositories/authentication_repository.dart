@@ -17,7 +17,7 @@ class AuthenticationRepository extends GetxController {
   late final Rx<User?> _firebaseUser;
   final _auth = FirebaseAuth.instance;
 
-  /// Getters TODO: vezi daca mai vrei ceva aici
+  /// Getters
   User? get firebaseUser => _firebaseUser.value;
 
   String get getUserID => _firebaseUser.value?.uid ?? "";

@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 
+
 // Custom widget for input
 
 // ignore: must_be_immutable
@@ -21,28 +22,27 @@ class InputType extends StatefulWidget {
     required this.mustBeFilled,
     this.passwordVisible = false,
     this.dropdownList = const [DropdownMenuEntry(value: null, label: '')],
+    this.dropdownInitialSelection = const DropdownMenuEntry(value: 0, label: ''),
     this.multiselectList = const [DropdownMenuEntry(value: 1, label: '')],
+    this.multiselectInitialValue = const [],
     this.dropdownWidth,
     this.calendarStart,
     this.calendarEnd,
-    //required this.action,
-    //required this.onSubmitted
   });
   final TextEditingController? controller;
   final FormFieldValidator<String?>? validator;
-  //final GlobalKey<MultiSelect>? multiSelectKey;
   final String type;
   final TextInputType inputType;
   final String placeholder;
   final bool mustBeFilled;
   final List<DropdownMenuEntry> dropdownList;
+  DropdownMenuEntry dropdownInitialSelection;
   final List<DropdownMenuEntry> multiselectList;
+  List<DropdownMenuEntry> multiselectInitialValue;
   bool passwordVisible;
   double? dropdownWidth;
   DateTime? calendarStart;
   DateTime? calendarEnd;
-  //final TextInputAction action;
-  //final void Function(String) onSubmitted;
 
   @override
   State<InputType> createState() => _InputTypeState();
@@ -50,7 +50,17 @@ class InputType extends StatefulWidget {
 
 class _InputTypeState extends State<InputType> {
   List<DateTime?> _dates = [DateTime.now().add(const Duration(days: 1))];
-  
+  late DropdownMenuEntry _selectedDropdownValue;
+  // ignore: unused_field
+  List<DropdownMenuEntry> _selectedMultiselectValues = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDropdownValue = widget.dropdownInitialSelection;
+    _selectedMultiselectValues = widget.multiselectInitialValue;
+  }
+
   @override
   Widget build(BuildContext context) {
     final items = widget.multiselectList
@@ -60,21 +70,17 @@ class _InputTypeState extends State<InputType> {
     widget.dropdownWidth ?? context.width;
     widget.calendarStart ?? DateTime.now();
     widget.calendarEnd ?? DateTime(2026);
-    // ignore: unused_local_variable
-    List<Object?> selectedItems = [];
 
     return widget.type == "one-line"
         ? TextFormField(
             controller: widget.controller,
             validator: widget.validator ?? (value) {return null;},
             keyboardType: widget.inputType,
-            //textInputAction: action,
             obscureText: false,
             showCursor: true,
             cursorColor: red5,
             cursorErrorColor: red5,
             maxLines: 1,
-            //onSubmitted: onSubmitted,
             style: tParagraph.copyWith(color: black),
             decoration: InputDecoration(
               border: UnderlineInputBorder(
@@ -101,13 +107,11 @@ class _InputTypeState extends State<InputType> {
                 controller: widget.controller,
                 validator: widget.validator ?? (value) {return null;},
                 keyboardType: TextInputType.visiblePassword,
-                //textInputAction: action,
                 obscureText: !widget.passwordVisible,
                 showCursor: true,
                 cursorColor: red5,
                 cursorErrorColor: red5,
                 maxLines: 1,
-                //onSubmitted: onSubmitted,
                 style: tParagraph.copyWith(color: black),
                 decoration: InputDecoration(
                   border: UnderlineInputBorder(
@@ -143,6 +147,7 @@ class _InputTypeState extends State<InputType> {
                 ))
             : widget.type == "dropdown"
                 ? DropdownMenu(
+                    initialSelection: _selectedDropdownValue,
                     controller: widget.controller,
                     width: widget.dropdownWidth,
                     label: Text(widget.placeholder),
@@ -172,23 +177,23 @@ class _InputTypeState extends State<InputType> {
                         color: blue7, size: 20),
                     selectedTrailingIcon:
                         Icon(CupertinoIcons.chevron_up, color: blue7, size: 20),
-                    //menuStyle: MenuStyle(
-                    //  backgroundColor:,
-                    //),
                     dropdownMenuEntries: widget.dropdownList,
+                    onSelected: (value) {
+                      setState(() {
+                        _selectedDropdownValue = value!;
+                      });
+                    },
                   )
                 : widget.type == "text-area"
                     ? TextFormField(
                         controller: widget.controller,
                         validator: widget.validator ?? (value) {return null;},
                         keyboardType: TextInputType.multiline,
-                        //textInputAction: action,
                         obscureText: false,
                         showCursor: true,
                         cursorColor: red5,
                         cursorErrorColor: red5,
                         maxLines: null,
-                        //onSubmitted: onSubmitted,
                         style: tParagraph.copyWith(color: black),
                         decoration: InputDecoration(
                           border: UnderlineInputBorder(
@@ -221,10 +226,6 @@ class _InputTypeState extends State<InputType> {
                             cursorErrorColor: red5,
                             maxLines: 1,
                             style: tParagraph.copyWith(color: black),
-                            // controller: TextEditingController(
-                            //     text: DateFormat('dd MMMM yyyy')
-                            //         .format(_dates[0]!)),
-                            // TODO
                             decoration: InputDecoration(
                               border: UnderlineInputBorder(
                                   borderSide:
@@ -338,12 +339,14 @@ class _InputTypeState extends State<InputType> {
                                   selectedTextStyle:
                                       tParagraph.copyWith(color: black),
                                   onTap: (values) {
-                                    selectedItems = values;
+                                    setState(() {
+                                      _selectedMultiselectValues = values;
+                                    });
                                   },
                                   scroll: false,
                                   showHeader: false,
                                   items: items,
-                                  initialValue: const [],
+                                  initialValue: widget.multiselectInitialValue,
                                 ),
                               ],
                             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/data/repositories/authentication_repository.dart';
+import 'package:flutter_application/data/repositories/cart_repository.dart';
 import 'package:flutter_application/features/profile/controllers/user_controller.dart';
 import 'package:flutter_application/utils/helpers/network_manager.dart';
 import 'package:flutter_application/utils/popups/full_screen_loader.dart';
@@ -13,6 +14,7 @@ class LoginController extends GetxController {
   final email = TextEditingController();
   final password = TextEditingController();
   final userController = Get.put(UserController());
+  final _cartRepository = Get.put(CartRepository());
   GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
 
   @override
@@ -50,6 +52,9 @@ class LoginController extends GetxController {
 
       // Remove Loader
       TFullScreenLoader.stopLoading();
+
+      await _cartRepository.deleteAnonymousCart(userController.currentCart.value.id);
+      userController.currentCart.value = await _cartRepository.fetchUserCart(userController.user.value.id);
 
       // Redirect
       await AuthenticationRepository.instance.screenRedirect(userCredentials.user);

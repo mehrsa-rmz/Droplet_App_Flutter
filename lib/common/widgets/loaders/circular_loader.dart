@@ -25,7 +25,7 @@ class TCircularLoader extends StatelessWidget {
       child: const Center(
         child: SpinKitFadingCircle(
           color: Color(0xFFE6AB9E),
-          size: 80.0,
+          size: 100.0,
         )
       ),
     );

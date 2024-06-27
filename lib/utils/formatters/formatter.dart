@@ -1,9 +1,23 @@
 import 'package:intl/intl.dart';
 
 class TFormatter {
-  static String formatDate(DateTime? date) {
-    date ??= DateTime.now();
-    
+  static String formatDate(DateTime date){
+    return DateFormat('dd-MM-yyyy').format(date);
+  }
+
+  static DateTime dateFromString(String date){
+    return DateFormat('dd-MM-yyyy').parse(date);
+  }
+
+  static String formatAppointmentDate(DateTime date){
+    return DateFormat('yyyy-MM-dd HH:mm').format(date);
+  }
+
+  static DateTime appointmentDateFromString(String date){
+    return DateFormat('yyyy-MM-dd HH:mm').parse(date);
+  }
+
+  static String formatDateSpecial(DateTime date) {
     String daySuffix(int day) {
       if (day >= 11 && day <= 13) {
         return 'th';
@@ -27,29 +41,7 @@ class TFormatter {
     return '$month $day${daySuffix(int.parse(day))} $year';
   }
 
-  static String formatTimestamp(int timestamp) {
-    // Convert timestamp to DateTime
-    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-
-    // Format DateTime to YYYY-MM-DD
-    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
-    String formattedDate = dateFormat.format(dateTime);
-
-    return formattedDate;
-  }
-
   static String formatPhoneNumber(String phoneNumber) {
     return '(${phoneNumber.substring(0,3)}) ${phoneNumber.substring(4,6)} ${phoneNumber.substring(7)}';
-  }
-
-  static int convertStringToTimestamp(String dateStr) {
-    // Parse the string to DateTime
-    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
-    DateTime dateTime = dateFormat.parse(dateStr);
-
-    // Convert DateTime to timestamp (in seconds since epoch)
-    int timestamp = dateTime.millisecondsSinceEpoch ~/ 1000;
-
-    return timestamp;
   }
 }

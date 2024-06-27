@@ -1,57 +1,34 @@
-import 'package:flutter_application/features/products/models/ingredient_model.dart';
-import 'package:flutter_application/features/profile/models/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserAllergyModel {
   final String id;
-  final UserModel user;
-  final IngredientModel ingredient;
+  final String userId;
+  final String ingredientId;
 
   UserAllergyModel({
     required this.id,
-    required this.user,
-    required this.ingredient
+    required this.userId,
+    required this.ingredientId
   });
 
-  static UserAllergyModel empty() => UserAllergyModel(id: '', user: UserModel.empty(), ingredient: IngredientModel.empty());
+  static UserAllergyModel empty() => UserAllergyModel(id: '', userId: '', ingredientId: '');
   
   // Convert to JSON structure for Firebase
   Map<String, dynamic> toJson() {
     return{
       'itemID': id,
-      'customerId': user.id,
-      'ingredientId': ingredient.id,
+      'customerId': userId,
+      'ingredientId': ingredientId,
     };
   }
 
   // Create a model from Firebase document
-   static Future<UserAllergyModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
-    if (document.data() != null) {
-      final data = document.data()!;
-      final userId = data['customerId'] as String;
-      final ingredientId = data['ingredientId'] as String;
-      // Fetch user document
-      final userDoc = await FirebaseFirestore.instance
-          .collection('Customers')
-          .doc(userId)
-          .get();
-      final user = UserModel.fromSnapshot(userDoc);
-
-      // Fetch ingredient document
-      final ingredientDoc = await FirebaseFirestore.instance
-          .collection('Ingredients')
-          .doc(ingredientId)
-          .get();
-      final ingredient = IngredientModel.fromSnapshot(ingredientDoc);
-
-      return UserAllergyModel(
-        id: document.id,
-        user: user,
-        ingredient: ingredient
-        );
-    } else {
-      return UserAllergyModel.empty();
-    }
+  static Future<UserAllergyModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
+    final data = document.data()!;
+    return UserAllergyModel(
+      id: document.id,
+      userId: data['customerId'] as String? ?? '',
+      ingredientId: data['ingredientId'] as String? ?? '',
+    );
   }
-
 }

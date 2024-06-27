@@ -61,7 +61,7 @@ class SignupSuccessScreen extends StatelessWidget {
                       text: 'Go to homepage',
                       color: blue7,
                       type: 'secondary',
-                      onPressed: () => Get.to(() => const ExploreScreen()),
+                      onPressed: () => Get.offAll(() => const ExploreScreen()),
                     ),
                   ],
                 )),

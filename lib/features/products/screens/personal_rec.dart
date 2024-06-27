@@ -1,5 +1,27 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/features/products/controllers/conditions_controller.dart';
+import 'package:flutter_application/features/products/controllers/favorites_controller.dart';
+import 'package:flutter_application/features/products/controllers/ingredinets_controller.dart';
+import 'package:flutter_application/features/products/controllers/product_conditions_controller.dart';
+import 'package:flutter_application/features/products/controllers/product_controller.dart';
+import 'package:flutter_application/features/products/controllers/product_ingredients_controller.dart';
+import 'package:flutter_application/features/products/controllers/product_review_controller.dart';
+import 'package:flutter_application/features/products/models/condition_model.dart';
+import 'package:flutter_application/features/products/models/favorites_model.dart';
+import 'package:flutter_application/features/products/models/ingredient_model.dart';
+import 'package:flutter_application/features/products/models/product_condition_model.dart';
+import 'package:flutter_application/features/products/models/product_ingredient_model.dart';
+import 'package:flutter_application/features/products/models/product_model.dart';
+import 'package:flutter_application/features/products/models/product_review_model.dart';
+import 'package:flutter_application/features/products/screens/product_page.dart';
+import 'package:flutter_application/features/profile/controllers/user_allergies_controller.dart';
+import 'package:flutter_application/features/profile/controllers/user_conditions_controller.dart';
+import 'package:flutter_application/features/profile/controllers/user_controller.dart';
+import 'package:flutter_application/features/profile/models/user_allergy_model.dart';
+import 'package:flutter_application/features/profile/models/user_condition_model.dart';
+import 'package:flutter_application/features/profile/models/user_model.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
 import 'package:flutter_application/utils/constants/text_styles.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
@@ -7,6 +29,7 @@ import 'package:flutter_application/common/widgets/buttons.dart';
 import 'package:flutter_application/common/widgets/inputs.dart';
 import 'package:flutter_application/common/widgets/navbar.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class PersonalRecScreen extends StatefulWidget {
   const PersonalRecScreen({super.key});
@@ -16,141 +39,218 @@ class PersonalRecScreen extends StatefulWidget {
 }
 
 class _PersonalRecScreenState extends State<PersonalRecScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  final List<Map<String, dynamic>> _products = [
-    {
-      'category': 'hair',
-      'sex': 'f',
-      'age': 'all',
-      'conditions': ['thin hair', 'dandruff'],
-      'hypoallergenic': true,
-      'name': 'Hair Mousse',
-      'price': 120.toDouble(),
-      'reviewsNo': 21,
-      'rating': 4.85,
-      'favorite': false,
-      'outOfStock': false,
-      'noOfOrders': 10,
-      'promotion': 0,
-      'description':
-          'This is a very long message meant for completing the text area input in order to make it look better. This is a very long message meant for completing the text area input in order to make it look better.',
-      'ingredients': ['Water', 'Jojoba oil', 'Glycerin', 'Rose extract']
-    },
-    {
-      'category': 'hair',
-      'sex': 'f',
-      'age': 'all',
-      'conditions': ['thin hair', 'dandruff'],
-      'hypoallergenic': true,
-      'name': 'Shampoo',
-      'price': 95.toDouble(),
-      'reviewsNo': 10,
-      'rating': 4.55,
-      'favorite': true,
-      'outOfStock': false,
-      'noOfOrders': 5,
-      'promotion': -20,
-      'description':
-          'This is a very long message meant for completing the text area input in order to make it look better. This is a very long message meant for completing the text area input in order to make it look better.',
-      'ingredients': ['Water', 'Jojoba oil', 'Glycerin', 'Rose extract']
-    },
-    {
-      'category': 'hair',
-      'sex': 'f',
-      'age': 'all',
-      'conditions': ['curly', 'dry', 'dandruff'],
-      'hypoallergenic': true,
-      'name': 'Conditioner',
-      'price': 70.toDouble(),
-      'reviewsNo': 6,
-      'rating': 5.00,
-      'favorite': false,
-      'outOfStock': true,
-      'noOfOrders': 2,
-      'promotion': 0,
-      'description':
-          'This is a very long message meant for completing the text area input in order to make it look better. This is a very long message meant for completing the text area input in order to make it look better.',
-      'ingredients': ['Water', 'Jojoba oil', 'Glycerin', 'Rose extract']
-    },
-  ];
-
-  final Map<String, dynamic> _user = {
-    'emai': 'poplaura@gmail.com',
-    'password': '123456',
-    'resetCode': '-',
-    'firstName': 'Ana',
-    'lastName': 'Pop',
-    'cliendCode': '165432',
-    'points': 475.toDouble(),
-    'phone': '0722555444',
-    'city': 'Bucharest',
-    'postalCode': '0308334',
-    'address': 'Sector 4, str. Pacii nr. 54, bl. F2, scara 2, etaj 5, ap. 44',
-    'gender': 'f',
-    'birthday': 'October 16th 1999',
-    'ageGroup': '24-35',
-    'conditions': [
-      'oily',
-      'sensitive',
-      'acne prone',
-      'curly',
-      'dry',
-      'dyed',
-      'thick',
-      'frizzy',
-      'floral',
-      'fruity',
-      'spiced'
-    ],
-    'allergies': [],
-    'testersNo': 2
+  User? user = FirebaseAuth.instance.currentUser;
+  UserModel? userModel;
+  Map<String, dynamic> userDetails = {
+    'id': '',
+    'gender': 'all',
+    'ageGroup': 'all',
+    'conditions': [],
+    'allergies': []
   };
+  List<Map<String, dynamic>> allProducts = [];
 
-  late List<Map<String, dynamic>> _filteredProducts;
+  final TextEditingController _searchController = TextEditingController();
+
+  List<Map<String, dynamic>> _filteredProducts = [];
   String category = 'all';
+  String sex = 'all';
+  String age = 'all';
+  List<String> conditions = [];
+  bool hypoallergenic = false;
   RangeValues priceRange = const RangeValues(0, 560);
+  List<String> ingredients = [];
   String sortBy = 'Alphabetical';
 
   @override
   void initState() {
     super.initState();
-    _filteredProducts = _products.where((product) {
-      bool matchesCategory =
-          category == 'all' ? true : product['category'] == category;
-      bool matchesSex =
-          product['sex'] == _user['gender'] || product['sex'] == 'all';
-      bool matchesAge =
-          product['age'] == _user['ageGroup'] || product['age'] == 'all';
-      bool matchesConditions = _user['conditions'].isEmpty ||
-          (_user['conditions'] as List<String>).any((condition) =>
-              (product['conditions'] as List<String>).contains(condition));
-      bool matchesIngredients = _user['allergies'].isEmpty ||
-          (_user['allergies'] as List<String>).every((ingredient) =>
-              !(product['ingredients'] as List<String>).contains(ingredient));
-
-      return matchesCategory &&
-          matchesSex &&
-          matchesAge &&
-          matchesConditions &&
-          matchesIngredients;
-    }).toList();
+    fetchUserData();
+    fetchAndCombineData().then((_) {
+      setState(() {
+        _filterProducts();
+      });
+    });
     _searchController.addListener(_filterProducts);
+  }
+
+  Future<void> fetchUserData() async {
+    if (user != null) {
+      String userId = user!.uid;
+      userModel = await UserController.fetchUserById(userId);
+
+      if (userModel != null) {
+        print('User fetched successfully: ${userModel!.fullName}');
+      } else {
+        print('User not found.');
+      }
+
+      List<UserConditionModel> userConditions = await UserConditionController.instance.fetchAllUserConditions();
+      List<UserAllergyModel> userAllergies = await UserAllergyController.instance.fetchAllUserAllergies();
+      List<IngredientModel> ingredients = await IngredientController.instance.getIngredients();
+      List<ConditionModel> conditions = await ConditionController.instance.getConditions();
+
+      // Mapping ingredients to their IDs for quick lookup
+      Map<String, IngredientModel> ingredientMap = {for (var i in ingredients) i.id: i};
+      Map<String, ConditionModel> conditionMap = {for (var c in conditions) c.id: c};
+
+      // Creating a map for user conditions and allergies
+      Map<String, List<String>> userConditionMap = {};
+      for (var uc in userConditions) {
+        if (!userConditionMap.containsKey(uc.userId)) {
+          userConditionMap[uc.userId] = [];
+        }
+        userConditionMap[uc.userId]!.add(uc.conditionId);
+      }
+
+      Map<String, List<String>> userAllergyMap = {};
+      for (var ui in userAllergies) {
+        if (!userAllergyMap.containsKey(ui.userId)) {
+          userAllergyMap[ui.userId] = [];
+        }
+        userAllergyMap[ui.userId]!.add(ui.ingredientId);
+      }
+
+      // Constructing the current product data
+      List<String> allergyIds = userAllergyMap[userId] ?? [];
+      List<String> conditionIds = userConditionMap[userId] ?? [];
+
+      String getAgeRange(String birthdayString) {
+        if (birthdayString.isEmpty) {
+          return 'all';
+        }
+
+        DateFormat formatter = DateFormat('dd-MM-yyyy');
+        DateTime birthday;
+
+        try {
+          birthday = formatter.parse(birthdayString);
+        } catch (e) {
+          return 'Invalid date format';
+        }
+
+        DateTime today = DateTime.now();
+        int age = today.year - birthday.year;
+
+        if (today.month < birthday.month || (today.month == birthday.month && today.day < birthday.day)) {
+          age--;
+        }
+
+        if (age >= 16 && age <= 24) {
+          return '16-24 y';
+        } else if (age >= 25 && age <= 49) {
+          return '25-49 y';
+        } else {
+          return '50+ years';
+        } 
+      }
+
+      userDetails = {
+        'id': userId,
+        'gender': userModel?.gender ?? 'all',
+        'ageGroup': getAgeRange(userModel?.birthday ?? ''),
+        'conditions': conditionIds.map((id) => conditionMap[id]?.name ?? 'Unknown').toList(),
+        'allergies': allergyIds.map((id) => ingredientMap[id]?.name ?? 'Unknown').toList(),
+      };
+
+      setState(() {});
+
+    } else {
+      print('No user is currently signed in.');
+    }
+  }
+
+  Future<void> fetchAndCombineData() async {
+    // TODO: move these in the repositories
+    // Fetching future data
+    List<ProductConditionModel> productConditions = await ProductConditionController.instance.fetchAllProductConditions();
+    List<ProductIngredientModel> productIngredients = await ProductIngredientController.instance.fetchAllProductIngredients();
+    List<FavoriteModel> favorites = await FavoritesController.instance.fetchCurrentUserFavorites();
+    List<ProductReviewModel> productReviews = await ProductReviewController.instance.fetchAllProductsReviews();
+
+    // Fetching stream data
+    List<ProductModel> products = await ProductController.instance.fetchAllProducts();
+    List<ConditionModel> conditions = await ConditionController.instance.getConditions();
+    List<IngredientModel> ingredients = await IngredientController.instance.getIngredients();
+
+    // Mapping conditions and ingredients to their IDs for quick lookup
+    Map<String, ConditionModel> conditionMap = {for (var c in conditions) c.id: c};
+    Map<String, IngredientModel> ingredientMap = {for (var i in ingredients) i.id: i};
+
+    // Creating a map for product conditions and ingredients
+    Map<String, List<String>> productConditionMap = {};
+    for (var pc in productConditions) {
+      if (!productConditionMap.containsKey(pc.productId)) {
+        productConditionMap[pc.productId] = [];
+      }
+      productConditionMap[pc.productId]!.add(pc.conditionId);
+    }
+
+    Map<String, List<String>> productIngredientMap = {};
+    for (var pi in productIngredients) {
+      if (!productIngredientMap.containsKey(pi.productId)) {
+        productIngredientMap[pi.productId] = [];
+      }
+      productIngredientMap[pi.productId]!.add(pi.ingredientId);
+    }
+
+    // Creating a map for product reviews
+    Map<String, List<ProductReviewModel>> productReviewMap = {};
+    for (var pr in productReviews) {
+      if (!productReviewMap.containsKey(pr.productId)) {
+        productReviewMap[pr.productId] = [];
+      }
+      productReviewMap[pr.productId]!.add(pr);
+    }
+
+    // Creating a map for favorites
+    Set<String> favoriteProductIds = favorites.map((f) => f.productId).toSet();
+
+    // Combining the data into the desired structure
+    allProducts = products.map((product) {
+      String productId = product.id;
+      List<String> conditionIds = productConditionMap[productId] ?? [];
+      List<String> ingredientIds = productIngredientMap[productId] ?? [];
+
+      // Calculating reviews
+      List<ProductReviewModel> reviews = productReviewMap[productId] ?? [];
+      double rating = reviews.isNotEmpty
+          ? reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviews.length
+          : 0.0;
+
+      return {
+        'id': productId,
+        'category': product.category,
+        'sex': product.gender,
+        'age': product.ageGroup,
+        'conditions': conditionIds.map((id) => conditionMap[id]?.name ?? 'Unknown').toList(),
+        'hypoallergenic': product.isHypoallergenic,
+        'name': product.name,
+        'price': product.price,
+        'reviewsNo': reviews.length,
+        'rating': rating,
+        'favorite': favoriteProductIds.contains(productId),
+        'outOfStock': product.stock == 0,
+        'promotion': product.promotion,
+        'ingredients': ingredientIds.map((id) => ingredientMap[id]?.name ?? 'Unknown').toList(),
+      };
+    }).toList();
   }
 
   void _filterProducts() {
     setState(() {
-      _filteredProducts = _products.where((product) {
+      _filteredProducts = allProducts.where((product) {
         bool matchesCategory =
             category == 'all' ? true : product['category'] == category;
         bool matchesSex =
-            product['sex'] == _user['gender'] || product['sex'] == 'all';
+            product['sex'] == userDetails['gender'] || product['sex'] == 'all'; 
         bool matchesAge =
-            product['age'] == _user['ageGroup'] || product['age'] == 'all';
-        bool matchesConditions = _user['conditions'].isEmpty ||
-            (_user['conditions'] as List<String>).any((condition) =>
+            product['age'] == userDetails['ageGroup'] || product['age'] == 'all';
+        bool matchesConditions = userDetails['conditions'].isEmpty ||
+            (userDetails['conditions'] as List<String>).any((condition) =>
                 (product['conditions'] as List<String>).contains(condition));
-        bool matchesIngredients = _user['allergies'].isEmpty ||
-            (_user['allergies'] as List<String>).every((ingredient) =>
+        bool matchesIngredients = userDetails['allergies'].isEmpty ||
+            (userDetails['allergies'] as List<String>).every((ingredient) =>
                 !(product['ingredients'] as List<String>).contains(ingredient));
         bool matchesPrice = product['price'] >= priceRange.start &&
             product['price'] <= priceRange.end;
@@ -325,33 +425,33 @@ class _PersonalRecScreenState extends State<PersonalRecScreen> {
                               const SizedBox(width: 12),
                               categoryToggleButton(
                                   'Skincare',
-                                  category == 'skin',
+                                  category == 'Skin',
                                   () => setState(() {
-                                        category = 'skin';
+                                        category = 'Skin';
                                         _filterProducts();
                                       })),
                               const SizedBox(width: 12),
                               categoryToggleButton(
                                   'Haircare',
-                                  category == 'hair',
+                                  category == 'Hair',
                                   () => setState(() {
-                                        category = 'hair';
+                                        category = 'Hair';
                                         _filterProducts();
                                       })),
                               const SizedBox(width: 12),
                               categoryToggleButton(
                                   'Body',
-                                  category == 'body',
+                                  category == 'Body',
                                   () => setState(() {
-                                        category = 'body';
+                                        category = 'Body';
                                         _filterProducts();
                                       })),
                               const SizedBox(width: 12),
                               categoryToggleButton(
                                   'Perfume',
-                                  category == 'perfume',
+                                  category == 'Perfume',
                                   () => setState(() {
-                                        category = 'perfume';
+                                        category = 'Perfume';
                                         _filterProducts();
                                       })),
                             ],
@@ -415,19 +515,44 @@ class _PersonalRecScreenState extends State<PersonalRecScreen> {
                                   children: <Widget>[
                                       for (var product in _filteredProducts)
                                         productBox(
-                                            context.width,
-                                            product['name'],
-                                            product['price'],
-                                            product['reviewsNo'],
-                                            product['rating'],
-                                            product['favorite'],
-                                            product['outOfStock'],
-                                            product['promotion'],
-                                            () {},
-                                            () => setState(() {
-                                                  product['favorite'] =
-                                                      !product['favorite'];
-                                                })),
+                                          context.width,
+                                          product['name'],
+                                          product['price'],
+                                          product['reviewsNo'],
+                                          product['rating'],
+                                          product['favorite'],
+                                          product['outOfStock'],
+                                          product['promotion'],
+                                          () => Get.to(() => ProductDetailsScreen(currentProductId: product['id'],)),
+                                          user != null
+                                          ? () async {
+                                            setState(() {
+                                              product['favorite'] = !product['favorite'];
+                                            });
+
+                                            if (product['favorite'] == true) {
+                                              await FavoritesController.instance.addFavorite(
+                                                FavoriteModel(
+                                                  id: 'FAV_${userModel!.firstName}_${product['id']}',
+                                                  userId: userModel!.id,
+                                                  productId: product['id'],
+                                                ),
+                                              );
+                                            } else {
+                                              String favToDeleteId = await FavoritesController.instance.getFavoriteDocumentIdByItemId('FAV_${userModel!.firstName}_${product['id']}') ?? '';
+                                              await FavoritesController.instance.deleteFavorite(favToDeleteId);
+                                            }
+
+                                            // Fetch the updated data after the operation
+                                            await fetchAndCombineData();
+
+                                            // Update the state synchronously
+                                            setState(() {
+                                              _filterProducts();
+                                            });
+                                          }
+                                          : () {}
+                                        ),
                                     ]),
                           const SizedBox(
                             height: 20,
@@ -464,7 +589,7 @@ Widget categoryToggleButton(
 Widget productBox(
     double width,
     String name,
-    double price,
+    int price,
     int reviewsNo,
     double rating,
     bool favorite,

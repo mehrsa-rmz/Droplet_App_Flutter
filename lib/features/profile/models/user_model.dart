@@ -1,4 +1,3 @@
-import 'package:flutter_application/features/order/models/cart_model.dart';
 import 'package:flutter_application/utils/formatters/formatter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -12,7 +11,7 @@ class UserModel {
   String? gender;
   String? phoneNo;
   String? address;
-  final CartModel? cart; //TODO
+  final String cartId;
 
   UserModel({
     required this.id,
@@ -23,14 +22,14 @@ class UserModel {
     this.gender,
     this.phoneNo,
     this.address,
-    this.cart, //TODO
+    required this.cartId,
   });
 
   String get fullName => '$firstName $lastName';
   String get formattedPhoneNo => TFormatter.formatPhoneNumber(phoneNo!);
   static List<String> nameParts(fullName) => fullName.split(" ");
   
-  static UserModel empty() => UserModel(id: '', email: '', firstName: '', lastName: '', birthday: '', gender: 'all', phoneNo: '', address: '');
+  static UserModel empty() => UserModel(id: '', email: '', firstName: '', lastName: '', birthday: '', gender: 'all', phoneNo: '', address: '', cartId: '');
 
   // Convert to JSON structure for Firebase
   Map<String, dynamic> toJson() {
@@ -43,6 +42,7 @@ class UserModel {
       'gender': gender,
       'phoneNo': phoneNo,
       'address': address,
+      'cartId': cartId
     };
   }
 
@@ -63,10 +63,10 @@ class UserModel {
         gender: data['gender'] as String,
         phoneNo: data['phoneNo'] as String,
         address: data['address'] as String,
+        cartId: data['cartId'] as String
         );
     } else {
       return UserModel.empty();
     }
   }
-
 }

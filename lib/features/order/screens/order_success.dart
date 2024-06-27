@@ -59,7 +59,7 @@ class OrderSuccessScreen extends StatelessWidget {
                       text: 'Back to homepage',
                       color: red5,
                       type: 'primary',
-                      onPressed: () => Get.to(() => const ExploreScreen()),
+                      onPressed: () => Get.offAll(() => const ExploreScreen()),
                     ),
                   ],
                 )),

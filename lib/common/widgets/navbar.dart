@@ -2,10 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_application/features/explore/screens/explore.dart';
+import 'package:flutter_application/features/order/controllers/cart_item_controller.dart';
 import 'package:flutter_application/features/products/controllers/favorites_controller.dart';
 import 'package:flutter_application/features/products/screens/favorites.dart';
 import 'package:flutter_application/features/order/screens/shopping_cart.dart';
 import 'package:flutter_application/features/products/screens/product_categories.dart';
+import 'package:flutter_application/features/profile/controllers/user_controller.dart';
+import 'package:flutter_application/features/profile/models/user_model.dart';
 import 'package:flutter_application/features/profile/screens/profile.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
 import 'package:get/get.dart';
@@ -23,20 +26,33 @@ class BottomNavBar extends StatefulWidget {
 
 class _BottomNavBarState extends State<BottomNavBar> {
   User? user = FirebaseAuth.instance.currentUser;
-  int cartItemsCount = 0;
 
   @override
   void initState() {
     super.initState();
     if (user != null) {
       FirebaseAuth.instance.authStateChanges().listen((User? user) {
-        setState(() {
-          this.user = user;
-          if (user != null) {
-            FavoritesController.instance.fetchCurrentUserFavorites();
-          }
-        });
+        if (mounted) {
+          setState(() {
+            this.user = user;
+            if (user != null) {
+              FavoritesController.instance.fetchCurrentUserFavorites();
+            }
+          });
+        }
       });
+    }
+  }
+
+  void fetchCartItemsCount() async {
+    if (user != null) {
+      UserModel? userModel = await UserController.fetchUserById(user!.uid);
+      if (userModel != null) {
+        CartItemsController.instance.fetchCartItemsForCartId(userModel.cartId);
+      }
+    } else {
+      // Handle case when user is logged out and use the currentCart from UserController
+      CartItemsController.instance.fetchCartItemsForCartId(UserController.instance.currentCart.value.id);
     }
   }
 
@@ -80,18 +96,26 @@ class _BottomNavBarState extends State<BottomNavBar> {
                 icon: CupertinoIcons.person,
                 selected: widget.selectedOption == 'profile',
                 onPressed: () => Get.to(() => const ProfileScreen())),
-Obx(() =>     IconBottomBarWithBadge(
+              user != null ?
+              Obx(() => IconBottomBarWithBadge(
                 text: "Favorites",
-                number: user != null ? FavoritesController.instance.favoriteCount.value : 0,
+                number: FavoritesController.instance.favoriteCount.value,
                 icon: CupertinoIcons.heart,
                 selected: widget.selectedOption == 'favorites',
-                onPressed: () => Get.to(() => const FavoritesScreen()),)),              
-              IconBottomBarWithBadge(
+                onPressed: () => Get.offAll(() => const FavoritesScreen())))  
+              : IconBottomBarWithBadge(
+                text: "Favorites",
+                number:  0,
+                icon: CupertinoIcons.heart,
+                selected: widget.selectedOption == 'favorites',
+                onPressed: () => Get.offAll(() => const FavoritesScreen())),     
+               Obx(() => IconBottomBarWithBadge(
                 text: "Cart",
-                number: cartItemsCount, // TODO
+                number: CartItemsController.instance.cartItemCount.value,
                 icon: CupertinoIcons.cart,
                 selected: widget.selectedOption == 'cart',
                 onPressed: () => Get.to(() => const ShoppingCartScreen())),
+              )
             ],
           ),
         ),

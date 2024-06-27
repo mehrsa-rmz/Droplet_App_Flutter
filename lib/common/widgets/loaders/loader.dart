@@ -33,7 +33,7 @@ class TLoaderWidget extends StatelessWidget {
         children: [
           Text(
             text,
-            style: h5.copyWith(color: white1),
+            style: h5.copyWith(color: white1, decoration: TextDecoration.none),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),

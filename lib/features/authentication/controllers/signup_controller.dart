@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/data/repositories/authentication_repository.dart';
+import 'package:flutter_application/data/repositories/cart_repository.dart';
 import 'package:flutter_application/features/authentication/screens/signup/signup_success.dart';
+import 'package:flutter_application/features/order/models/cart_model.dart';
 import 'package:flutter_application/features/profile/controllers/user_controller.dart';
 import 'package:flutter_application/features/profile/models/user_model.dart';
 import 'package:flutter_application/utils/helpers/network_manager.dart';
@@ -17,6 +19,8 @@ class SignupController extends GetxController {
   final lastName = TextEditingController();
   final password = TextEditingController();
   final repeatPassword = TextEditingController();
+  final userController = Get.put(UserController());
+  final _cartRepository = Get.put(CartRepository());
   GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
 
   @override
@@ -29,7 +33,6 @@ class SignupController extends GetxController {
     super.onClose();
   }
 
-  // Update current index and jump to nextPage
   Future<void> signup() async {
     // Start Loading
     try {
@@ -50,23 +53,29 @@ class SignupController extends GetxController {
 
       // Register user in Firebase Authentication & save user data in Firebase
       await AuthenticationRepository.instance.registerWithEmailAndPassword(email.text.trim(), password.text.trim());
-
+      
       // Save authenticated user data in Firebase Firestore
+      CartModel newCart = await _cartRepository.createUserCart(AuthenticationRepository.instance.getUserID);
+
       final newUser = UserModel(
         id: AuthenticationRepository.instance.getUserID,
         email: email.text.trim(),
         firstName: firstName.text.trim(),
         lastName: lastName.text.trim(),
-        birthday: null,
-        gender: '',
+        birthday: '',
+        gender: 'all',
         phoneNo: '',
         address: '',
+        cartId: newCart.id
       );
 
-      await UserController.instance.saveUserRecord(user: newUser);
+      await userController.saveUserRecord(user: newUser);
 
       // Remove Loader
       TFullScreenLoader.stopLoading();
+
+      await _cartRepository.deleteAnonymousCart(userController.currentCart.value.id);
+      userController.currentCart.value = await _cartRepository.fetchUserCart(userController.user.value.id);
 
       // Success message
       Get.to(() => const SignupSuccessScreen());

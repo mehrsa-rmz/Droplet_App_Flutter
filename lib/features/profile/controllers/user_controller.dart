@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/data/repositories/authentication_repository.dart';
+import 'package:flutter_application/data/repositories/cart_repository.dart';
+import 'package:flutter_application/features/order/models/cart_model.dart';
 import 'package:get/get.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../utils/popups/loaders.dart';
@@ -10,8 +12,10 @@ import '../models/user_model.dart';
 /// Controller to manage user-related functionality.
 class UserController extends GetxController {
   static UserController get instance => Get.put(UserController());
-
+  final _cartRepository = Get.put(CartRepository());
+  Rx<CartModel> currentCart = CartModel.empty().obs;
   Rx<UserModel> user = UserModel.empty().obs;
+
   final profileLoading = false.obs;
   final verifyEmail = TextEditingController();
   final verifyPassword = TextEditingController();
@@ -20,7 +24,12 @@ class UserController extends GetxController {
 
   /// init user data when Home Screen appears
   @override
-  void onInit() {
+  void onInit() async {
+    if (FirebaseAuth.instance.currentUser == null) {
+      currentCart.value = await _cartRepository.createAnonymousCart();
+    } else {
+      currentCart.value = await _cartRepository.fetchUserCart(FirebaseAuth.instance.currentUser!.uid);
+    }
     fetchUserRecord();
     super.onInit();
   }
@@ -41,6 +50,26 @@ class UserController extends GetxController {
     } catch (e) {
       print("Error fetching user: $e");
       return null;
+    }
+  }
+
+  // Fetch a user by ID
+  static Future<String> fetchUserNameById(String userId) async {
+    try {
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('Customers')
+          .doc(userId)
+          .get();
+
+      if (docSnapshot.exists) {
+        UserModel thisUser = UserModel.fromSnapshot(docSnapshot);
+        return thisUser.fullName;
+      } else {
+        return '';
+      }
+    } catch (e) {
+      print("Error fetching user: $e");
+      return '';
     }
   }
 
@@ -68,6 +97,8 @@ class UserController extends GetxController {
         if (userCredentials != null) {
           // Convert Name to First and Last Name
           final nameParts = UserModel.nameParts(userCredentials.user!.displayName ?? '');
+          CartModel newCart = await _cartRepository.createUserCart(userCredentials.user!.uid);
+          currentCart.value = newCart;
 
           // Map data
           final newUser = UserModel(
@@ -76,6 +107,10 @@ class UserController extends GetxController {
             lastName: nameParts.length > 1 ? nameParts.sublist(1).join(' ') : "",
             email: userCredentials.user!.email ?? '',
             phoneNo: userCredentials.user!.phoneNumber ?? '',
+            cartId: newCart.id,
+            birthday: '',
+            gender: 'all',
+            address: ''
           );
 
           // Save user data
@@ -103,8 +138,10 @@ class UserController extends GetxController {
   /// Logout Loader Function
   logout() async {
     try {
+      final anonymousCart = await _cartRepository.createAnonymousCart();
       await AuthenticationRepository.instance.logout();
-    } catch (e) {
+      currentCart.value = anonymousCart;    
+      } catch (e) {
       TLoaders.errorSnackBar(title: 'Oh Snap', message: e.toString());
     }
   }

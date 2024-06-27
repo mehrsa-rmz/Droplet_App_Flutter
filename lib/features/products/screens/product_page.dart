@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/features/authentication/screens/login/login.dart';
 import 'package:flutter_application/features/authentication/screens/signup/signup.dart';
+import 'package:flutter_application/features/order/controllers/cart_item_controller.dart';
 import 'package:flutter_application/features/products/controllers/favorites_controller.dart';
 import 'package:flutter_application/features/products/controllers/ingredinets_controller.dart';
 import 'package:flutter_application/features/products/controllers/product_controller.dart';
@@ -16,12 +17,14 @@ import 'package:flutter_application/features/products/models/product_model.dart'
 import 'package:flutter_application/features/products/models/product_review_model.dart';
 import 'package:flutter_application/features/profile/controllers/user_controller.dart';
 import 'package:flutter_application/features/profile/models/user_model.dart';
+import 'package:flutter_application/features/order/models/cart_item_model.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
 import 'package:flutter_application/utils/constants/text_styles.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
 import 'package:flutter_application/common/widgets/buttons.dart';
 import 'package:flutter_application/common/widgets/inputs.dart';
 import 'package:flutter_application/common/widgets/navbar.dart';
+import 'package:flutter_application/utils/formatters/formatter.dart';
 import 'package:get/get.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
@@ -46,9 +49,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     'outOfStock': false,
     'promotion': 0,
     'ingredients': [],
+    'stock': 0,
   };
   
   final ScrollController scrollController = ScrollController();
+
+  int newReviewRating = 0;
+  TextEditingController newReviewController = TextEditingController();
+  List<ProductReviewModel> currentProductReviews = [];
+  List<Map<String, dynamic>> currentProductReviewsMap = [];
 
   int inCart = 0;
   bool testerAdded = false;
@@ -56,6 +65,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   bool expanded1 = false;
   bool expanded2 = false;
   bool expanded3 = false;
+
+  final _cartItemsController = Get.put(CartItemsController());
+  final _userController = Get.put(UserController());
 
   @override
   void initState() {
@@ -83,8 +95,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     // Fetching future data
     List<ProductIngredientModel> productIngredients = await ProductIngredientController.instance.fetchAllProductIngredients();
     List<FavoriteModel> favorites = await FavoritesController.instance.fetchCurrentUserFavorites();
-    List<ProductReviewModel> productReviews = await ProductReviewController.instance.fetchAllProductsReviews();
-    // TODO: fetch cart
+    currentProductReviews = await ProductReviewController.instance.fetchAllProductsReviews();
+    await _cartItemsController.fetchCartItemsForCartId(_userController.currentCart.value.id); // Fetch cart items
 
     // Fetching product data
     ProductModel? fetchedProduct = await ProductController.instance.getProductById(widget.currentProductId);
@@ -109,11 +121,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
     // Creating a map for product reviews
     Map<String, List<ProductReviewModel>> productReviewMap = {};
-    for (var pr in productReviews) {
+    for (var pr in currentProductReviews) {
       if (!productReviewMap.containsKey(pr.productId)) {
         productReviewMap[pr.productId] = [];
+        productReviewMap[pr.productId]!.add(pr);
+        if(pr.productId == widget.currentProductId) {
+          currentProductReviewsMap.add(
+          {
+            'userName': await UserController.fetchUserNameById(pr.userId),
+            'rating': pr.rating,
+            'dateTime': pr.dateTime,
+            'message': pr.message!
+          }
+        );
+        }
       }
-      productReviewMap[pr.productId]!.add(pr);
     }
 
     // Creating a set for favorites
@@ -139,9 +161,48 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       'outOfStock': fetchedProduct.stock == 0,
       'promotion': fetchedProduct.promotion,
       'ingredients': ingredientIds.map((id) => ingredientMap[id]?.name ?? 'Unknown').toList(),
+      'stock': fetchedProduct.stock,
     };
 
     setState(() {});
+  }
+
+  Future<void> addToCart() async {
+    final cartId = _userController.currentCart.value.id;
+    final cartItem = CartItemModel(
+      id: 'CartItem_${cartId}_${currentProduct['id']}',
+      productId: currentProduct['id'],
+      cartId: cartId,
+      isTester: false,
+      quantity: 1,
+    );
+
+    await _cartItemsController.addCartItem(cartItem);
+    await _cartItemsController.fetchCartItemsForCartId(cartId);
+  }
+
+  Future<void> updateCartItem(CartItemModel cartItem, int quantity) async {
+    cartItem.quantity = quantity;
+    if (quantity > 0) {
+      await _cartItemsController.updateCartItem(cartItem.id, cartItem);
+    } else {
+      await _cartItemsController.deleteCartItem(cartItem.id);
+    }
+    await _cartItemsController.fetchCartItemsForCartId(cartItem.cartId);
+  }
+
+  Future<void> addTester() async {
+    final cartId = _userController.currentCart.value.id;
+    final cartItem = CartItemModel(
+      id: '',
+      productId: currentProduct['id'],
+      cartId: cartId,
+      isTester: true,
+      quantity: 1,
+    );
+
+    await _cartItemsController.addCartItem(cartItem);
+    await _cartItemsController.fetchCartItemsForCartId(cartId);
   }
 
   @override
@@ -234,7 +295,58 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                     setState(() {
                                     });
                                   }
-                                  : () {})
+                                  : () => showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        insetPadding: const EdgeInsets.all(16),
+                                        backgroundColor:white1,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        shadowColor: blue7dtrans,
+                                        title: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            IconButton(
+                                              icon: Icon(CupertinoIcons.xmark, color: red5, size: 24),
+                                              onPressed: () {Navigator.of(context).pop();},
+                                            ),
+                                            SizedBox(
+                                                width: context.width,
+                                                child: Text('Warning', textAlign: TextAlign.center, style: h5.copyWith(color: black))),
+                                            const SizedBox(height: 24),
+                                            SizedBox(
+                                                width: context.width,
+                                                child: Text( 'You must be logged in to add products to favorites', style: tParagraph.copyWith(color: grey8))),
+                                            const SizedBox(height: 24),
+                                            Row(children: [
+                                              SizedBox(
+                                                width: context.width /2 -6 -40,
+                                                child: ButtonTypeIcon(
+                                                  text: 'Login',
+                                                  icon: CupertinoIcons.square_arrow_right,
+                                                  color: blue7,
+                                                  type: 'primary',
+                                                  onPressed: () => Get.to(() => const LoginScreen()),
+                                                )
+                                              ),
+                                              const SizedBox(width: 12),
+                                              SizedBox(
+                                                width: context.width / 2 - 6 - 40,
+                                                child: ButtonTypeIcon(
+                                                  text: 'Sign up',
+                                                  icon: CupertinoIcons.person_badge_plus,
+                                                  color: red5,
+                                                  type: 'primary',
+                                                  onPressed: () => Get.to(() => const SignupScreen()),
+                                                )
+                                              )
+                                            ]),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                  ),
+                                )
                             ]
                           )
                         : Column(
@@ -288,7 +400,56 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         setState(() {
                                         });
                                       }
-                                      : () {}
+                                      : () => showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            insetPadding: const EdgeInsets.all(16),
+                                            backgroundColor:white1,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            shadowColor: blue7dtrans,
+                                            title: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.end,
+                                              children: [
+                                                IconButton(
+                                                  icon: Icon(CupertinoIcons.xmark, color: red5, size: 24),
+                                                  onPressed: () {Navigator.of(context).pop();},
+                                                ),
+                                                SizedBox(
+                                                    width: context.width,
+                                                    child: Text('Warning', textAlign: TextAlign.center, style: h5.copyWith(color: black))),
+                                                const SizedBox(height: 24),
+                                                SizedBox(
+                                                    width: context.width,
+                                                    child: Text( 'You must be logged in to add products to favorites', style: tParagraph.copyWith(color: grey8))),
+                                                const SizedBox(height: 24),
+                                                Row(children: [
+                                                  SizedBox(
+                                                    width: context.width /2 -6 -40,
+                                                    child: ButtonTypeIcon(
+                                                      text: 'Login',
+                                                      icon: CupertinoIcons.square_arrow_right,
+                                                      color: blue7,
+                                                      type: 'primary',
+                                                      onPressed: () => Get.to(() => const LoginScreen()),
+                                                    )
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  SizedBox(
+                                                    width: context.width / 2 - 6 - 40,
+                                                    child: ButtonTypeIcon(
+                                                      text: 'Sign up',
+                                                      icon: CupertinoIcons.person_badge_plus,
+                                                      color: red5,
+                                                      type: 'primary',
+                                                      onPressed: () => Get.to(() => const SignupScreen()),
+                                                    )
+                                                  )
+                                                ]),
+                                              ],
+                                            ),
+                                          );
+                                        }),
                                   )
                                 ],
                               ),
@@ -326,171 +487,217 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     const SizedBox(
                       height: 20,
                     ),
-                    inCart == 0
-                        ? (currentProduct['outOfStock']
-                            ? ButtonType(
-                                text: 'Out of stock',
-                                color: red5,
-                                type: 'primary')
-                            : ButtonType(
-                                text: 'Add to shopping cart',
-                                color: red5,
-                                type: 'primary',
-                                onPressed: () {
-                                  setState(() {
-                                    inCart = 1;
-                                  });
-                                },
-                              ))
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SizedBox(
-                                  width: 48,
-                                  child: ButtonTypeIcon(
-                                    text: '',
-                                    icon: CupertinoIcons.minus,
-                                    color: red5,
-                                    type: 'primary',
-                                    onPressed: () {
-                                      setState(() {
-                                        inCart--;
-                                      });
-                                    },
-                                  )),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 8),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: blue4ltrans,
-                                ),
-                                child: Text(
-                                  '$inCart in shopping cart',
-                                  style: tMenu.copyWith(color: black),
-                                ),
-                              ),
-                              SizedBox(
-                                  width: 48,
-                                  child: ButtonTypeIcon(
-                                    text: '',
-                                    icon: CupertinoIcons.add,
-                                    color: red5,
-                                    type: 'primary',
-                                    onPressed: () {
-                                      setState(() {
-                                        inCart++;
-                                      });
-                                    },
-                                  )),
-                            ],
-                          ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    user != null
-                        ? Column(
-                            children: [
-                              testerLimitReached
+                    Obx(() {
+                      final cartItems = _cartItemsController.cartItems
+                          .where((item) =>
+                              item.productId == currentProduct['id'] &&
+                              !item.isTester)
+                          .toList();
+
+                      final testerItem = _cartItemsController.cartItems
+                          .firstWhereOrNull((item) =>
+                              item.productId == currentProduct['id'] &&
+                              item.isTester);
+
+                      inCart = cartItems.isNotEmpty
+                          ? cartItems.first.quantity
+                          : 0;
+                      testerAdded = testerItem != null;
+
+                      return Column(
+                        children: [
+                          inCart == 0
+                              ? (currentProduct['outOfStock']
                                   ? ButtonType(
-                                      text: 'Tester limit reached',
+                                      text: 'Out of stock',
                                       color: red5,
                                       type: 'primary')
-                                  : testerAdded
-                                      ? Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const SizedBox(width: 48),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 24,
-                                                      vertical: 8),
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(20),
-                                                color: blue4ltrans,
-                                              ),
-                                              child: Text(
-                                                'Tester added',
-                                                style: tMenu.copyWith(
-                                                    color: black),
-                                              ),
-                                            ),
-                                            SizedBox(
-                                                width: 48,
-                                                child: ButtonTypeIcon(
-                                                  text: '',
-                                                  icon: CupertinoIcons.xmark,
-                                                  color: pink5,
-                                                  type: 'primary',
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      testerAdded = false;
-                                                    });
-                                                  },
-                                                )),
-                                          ],
-                                        )
-                                      : ButtonType(
-                                          text: 'Not sure yet? Try a tester',
-                                          color: pink5,
+                                  : ButtonType(
+                                      text: 'Add to shopping cart',
+                                      color: red5,
+                                      type: 'primary',
+                                      onPressed: () async {
+                                        await addToCart();
+                                        setState(() {});
+                                      },
+                                    ))
+                              : Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    SizedBox(
+                                        width: 48,
+                                        child: ButtonTypeIcon(
+                                          text: '',
+                                          icon: CupertinoIcons.minus,
+                                          color: red5,
                                           type: 'primary',
-                                          onPressed: () {
-                                            setState(() {
-                                              testerAdded = true;
-                                            });
+                                          onPressed: () async {
+                                            if (cartItems.isNotEmpty) {
+                                              final cartItem = cartItems.first;
+                                              await updateCartItem(cartItem, cartItem.quantity - 1);
+                                              setState(() {});
+                                            }
                                           },
-                                        ),
-                              const SizedBox(
-                                height: 8,
-                              ),
-                              Text(
-                                'Every month you can try up to 5 distinct testers for free (in the same order or different ones).',
-                                style: tParagraph.copyWith(color: grey8),
-                              )
-                            ],
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Wanna try a tester first?',
-                                  style: tMenu.copyWith(color: black)),
-                              const SizedBox(
-                                height: 8,
-                              ),
-                              Text(
-                                  'Every month you can try up to 5 distinct testers for free (in the same order or different ones).',
-                                  style: tParagraph.copyWith(color: grey8)),
-                              const SizedBox(
-                                height: 8,
-                              ),
-                              Row(
-                                children: [
-                                  SizedBox(
-                                      width: context.width / 2 - 16 - 6,
-                                      child: ButtonTypeIcon(
-                                        text: 'Login',
-                                        icon: CupertinoIcons.square_arrow_right,
-                                        color: blue7,
+                                        )),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 24, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        color: blue4ltrans,
+                                      ),
+                                      child: Text(
+                                        '$inCart in shopping cart',
+                                        style: tMenu.copyWith(color: black),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 48,
+                                      child: currentProduct['stock'] > inCart ? ButtonTypeIcon(
+                                        text: '',
+                                        icon: CupertinoIcons.add,
+                                        color: red5,
                                         type: 'primary',
-                                        onPressed: () => Get.to(() => const LoginScreen()),
-                                      )),
-                                  const SizedBox(width: 12),
-                                  SizedBox(
-                                      width: context.width / 2 - 16 - 6,
-                                      child: ButtonTypeIcon(
-                                        text: 'Sign up',
-                                        icon: CupertinoIcons.person_badge_plus,
-                                        color: pink5,
-                                        type: 'primary',
-                                        onPressed: () => Get.to(() => const SignupScreen()),
-                                      )),
-                                ],
-                              )
-                            ],
+                                        onPressed: () async {
+                                          if (currentProduct['stock'] > inCart) {
+                                            if (cartItems.isNotEmpty) {
+                                              final cartItem = cartItems.first;
+                                              await updateCartItem(cartItem, cartItem.quantity + 1);
+                                              setState(() {});
+                                            }
+                                          }
+                                        },
+                                      ) 
+                                      : ButtonTypeIcon(
+                                        text: '',
+                                        icon: CupertinoIcons.add,
+                                        color: red5,
+                                        type: 'primary'
+                                      )
+                                    ),
+                                  ],
+                                ),
+                          const SizedBox(
+                            height: 20,
                           ),
+                          user != null
+                              ? Column(
+                                  children: [
+                                    testerLimitReached
+                                        ? ButtonType(
+                                            text: 'Tester limit reached',
+                                            color: red5,
+                                            type: 'primary')
+                                        : testerAdded
+                                            ? Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  const SizedBox(width: 48),
+                                                  Container(
+                                                    padding: const EdgeInsets
+                                                            .symmetric(
+                                                        horizontal: 24,
+                                                        vertical: 8),
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              20),
+                                                      color: blue4ltrans,
+                                                    ),
+                                                    child: Text(
+                                                      'Tester added',
+                                                      style: tMenu.copyWith(
+                                                          color: black),
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                      width: 48,
+                                                      child: ButtonTypeIcon(
+                                                        text: '',
+                                                        icon: CupertinoIcons.xmark,
+                                                        color: pink5,
+                                                        type: 'primary',
+                                                        onPressed: () async {
+                                                          if (testerItem != null) {
+                                                            await _cartItemsController.deleteCartItem(testerItem.id);
+                                                            setState(() {});
+                                                          }
+                                                        },
+                                                      )),
+                                                ],
+                                              )
+                                            : ButtonType(
+                                                text:
+                                                    'Not sure yet? Try a tester',
+                                                color: pink5,
+                                                type: 'primary',
+                                                onPressed: () async {
+                                                  await addTester();
+                                                  setState(() {});
+                                                },
+                                              ),
+                                    const SizedBox(
+                                      height: 8,
+                                    ),
+                                    Text(
+                                      'Every month you can try up to 5 distinct testers for free (in the same order or different ones).',
+                                      style: tParagraph.copyWith(color: grey8),
+                                    )
+                                  ],
+                                )
+                              : Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Wanna try a tester first?',
+                                        style: tMenu.copyWith(color: black)),
+                                    const SizedBox(
+                                      height: 8,
+                                    ),
+                                    Text(
+                                        'Every month you can try up to 5 distinct testers for free (in the same order or different ones).',
+                                        style: tParagraph.copyWith(
+                                            color: grey8)),
+                                    const SizedBox(
+                                      height: 8,
+                                    ),
+                                    Row(
+                                      children: [
+                                        SizedBox(
+                                            width: context.width / 2 - 16 - 6,
+                                            child: ButtonTypeIcon(
+                                              text: 'Login',
+                                              icon: CupertinoIcons
+                                                  .square_arrow_right,
+                                              color: blue7,
+                                              type: 'primary',
+                                              onPressed: () =>
+                                                  Get.to(() =>
+                                                      const LoginScreen()),
+                                            )),
+                                        const SizedBox(width: 12),
+                                        SizedBox(
+                                            width: context.width / 2 - 16 - 6,
+                                            child: ButtonTypeIcon(
+                                              text: 'Sign up',
+                                              icon: CupertinoIcons
+                                                  .person_badge_plus,
+                                              color: pink5,
+                                              type: 'primary',
+                                              onPressed: () =>
+                                                  Get.to(() =>
+                                                      const SignupScreen()),
+                                            )),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                        ],
+                      );
+                    }),
                     const SizedBox(
                       height: 20,
                     ),
@@ -672,7 +879,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                             style: h5.copyWith(color: black))),
                                     const SizedBox(height: 24),
                                     Text(
-                                        'We hope you enjoyed your appointment! Leave a rating and a review for Pop Laura.',
+                                        'We hope you enjoyed this product! Leave a rating and a review for Pop Laura.',
                                         style:
                                             tParagraph.copyWith(color: grey8)),
                                     const SizedBox(height: 24),
@@ -689,7 +896,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                             CupertinoIcons.star_lefthalf_fill,
                                         emptyIcon: CupertinoIcons.star,
                                         onChanged: (double rating) {
-                                          // Handle the rating change here
+                                          newReviewRating = rating.round();
                                         },
                                         displayRatingValue: true,
                                         interactiveTooltips: true,
@@ -707,30 +914,48 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                     ),
                                     const SizedBox(height: 24),
                                     InputType(
-                                        type: 'text-area',
-                                        inputType: TextInputType.multiline,
-                                        placeholder: 'Message',
-                                        mustBeFilled: true,
-                                        ),
+                                      controller: newReviewController,
+                                      type: 'text-area',
+                                      inputType: TextInputType.multiline,
+                                      placeholder: 'Message',
+                                      mustBeFilled: true,
+                                      ),
                                     const SizedBox(height: 24),
                                     Row(children: [
                                       SizedBox(
                                           width: context.width / 2 - 6 - 40,
                                           child: ButtonType(
-                                              text: 'Save',
-                                              color: blue7,
-                                              type: "primary",
-                                              onPressed: () =>
-                                                  Navigator.of(context).pop())),
+                                            text: 'Save',
+                                            color: blue7,
+                                            type: "primary",
+                                            onPressed: () async => {
+                                              await ProductReviewController.instance.addProductReview(ProductReviewModel(
+                                                id: '', 
+                                                productId: widget.currentProductId, 
+                                                userId: userModel!.id, 
+                                                rating: newReviewRating, 
+                                                message: newReviewController.text, 
+                                                dateTime: TFormatter.formatAppointmentDate(DateTime.now())
+                                              )),
+                                              fetchProductData(),
+                                              Navigator.of(context).pop(),
+                                              setState(() {})
+                                            }
+                                          )
+                                      ),
                                       const SizedBox(width: 12),
                                       SizedBox(
-                                          width: context.width / 2 - 6 - 40,
-                                          child: ButtonType(
-                                              text: 'Cancel',
-                                              color: red5,
-                                              type: "secondary",
-                                              onPressed: () =>
-                                                  Navigator.of(context).pop()))
+                                        width: context.width / 2 - 6 - 40,
+                                        child: ButtonType(
+                                          text: 'Cancel',
+                                          color: red5,
+                                          type: "secondary",
+                                          onPressed: () => {
+                                            newReviewController.text = '',
+                                            Navigator.of(context).pop()
+                                          }
+                                        )
+                                      )
                                     ]),
                                   ],
                                 ),
@@ -741,12 +966,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       height: 20,
                     ),
                     expanded3
-                        ? const ReviewBox(
-                            name: 'Ana G.',
-                            rating: 3.5,
-                            date: 'February 26th 2024',
-                            review:
-                                'This is a general review message to fill this space.')
+                        ? Wrap(
+                          spacing: 20,
+                          children: <Widget>[
+                            for (var pr in currentProductReviewsMap)
+                              ReviewBox(name: pr['userName'], rating: pr['rating'], date: pr['dateTime'], review: pr['message'])
+                          ]
+                        )
                         : const SizedBox(
                             height: 20,
                           ),
@@ -766,7 +992,7 @@ class ReviewBox extends StatelessWidget {
       required this.review});
 
   final String name;
-  final double rating;
+  final int rating;
   final String date;
   final String review;
 

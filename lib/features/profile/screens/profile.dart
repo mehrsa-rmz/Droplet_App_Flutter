@@ -498,89 +498,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   type: "secondary",
                                                   onPressed: () => showDialog(
                                                       context: context,
-                                                      builder: (BuildContext
-                                                          context) {
+                                                      builder: (BuildContext context) {
                                                         return AlertDialog(
-                                                          insetPadding:
-                                                              const EdgeInsets
-                                                                  .all(16),
-                                                          backgroundColor:
-                                                              white1,
-                                                          shape: RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          8)),
-                                                          shadowColor:
-                                                              blue7dtrans,
+                                                          insetPadding: const EdgeInsets.all(16),
+                                                          backgroundColor:white1,
+                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                          shadowColor: blue7dtrans,
                                                           title: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .end,
+                                                            crossAxisAlignment: CrossAxisAlignment.end,
                                                             children: [
                                                               IconButton(
-                                                                icon: Icon(
-                                                                    CupertinoIcons
-                                                                        .xmark,
-                                                                    color: red5,
-                                                                    size: 24),
-                                                                onPressed: () {
-                                                                  Navigator.of(
-                                                                          context)
-                                                                      .pop();
-                                                                },
+                                                                icon: Icon(CupertinoIcons.xmark, color: red5, size: 24),
+                                                                onPressed: () {Navigator.of(context).pop();},
                                                               ),
                                                               SizedBox(
-                                                                  width: context
-                                                                      .width,
-                                                                  child: Text(
-                                                                      'Warning',
-                                                                      textAlign:
-                                                                          TextAlign
-                                                                              .center,
-                                                                      style: h5.copyWith(
-                                                                          color:
-                                                                              black))),
-                                                              const SizedBox(
-                                                                height: 24,
-                                                              ),
+                                                                  width: context.width,
+                                                                  child: Text('Warning', textAlign: TextAlign.center, style: h5.copyWith(color: black))),
+                                                              const SizedBox(height: 24),
                                                               SizedBox(
-                                                                  width: context
-                                                                      .width,
-                                                                  child: Text(
-                                                                      'Are you sure you want to logout?',
-                                                                      style: tParagraph.copyWith(
-                                                                          color:
-                                                                              grey8))),
-                                                              const SizedBox(
-                                                                  height: 24),
+                                                                  width: context.width,
+                                                                  child: Text( 'Are you sure you want to logout?', style: tParagraph.copyWith(color: grey8))),
+                                                              const SizedBox(height: 24),
                                                               Row(children: [
                                                                 SizedBox(
-                                                                    width: context.width /
-                                                                            2 -
-                                                                        6 -
-                                                                        40,
-                                                                    child: ButtonType(
-                                                                        text: 'Yes',
-                                                                        color: red5,
-                                                                        type: "primary",
-                                                                        onPressed: () => controller.logout()
-                                                                      )
-                                                                    ),
-                                                                const SizedBox(
-                                                                    width: 12),
+                                                                  width: context.width /2 -6 -40,
+                                                                  child: ButtonType(
+                                                                      text: 'Yes',
+                                                                      color: red5,
+                                                                      type: "primary",
+                                                                      onPressed: () => controller.logout()
+                                                                    )
+                                                                  ),
+                                                                const SizedBox(width: 12),
                                                                 SizedBox(
                                                                     width: context.width / 2 - 6 - 40,
                                                                     child: ButtonType(
-                                                                        text:
-                                                                            'Cancel',
-                                                                        color:
-                                                                            blue7,
-                                                                        type:
-                                                                            "secondary",
-                                                                        onPressed:
-                                                                            () =>
-                                                                                Navigator.of(context).pop()))
+                                                                        text: 'Cancel',
+                                                                        color: blue7,
+                                                                        type: "secondary",
+                                                                        onPressed: () => Navigator.of(context).pop()))
                                                               ]),
                                                             ],
                                                           ),
