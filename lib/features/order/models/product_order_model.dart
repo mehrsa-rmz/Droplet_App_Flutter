@@ -6,16 +6,18 @@ class ProductOrderModel {
   final String orderId;
   final bool isTester;
   final int quantity;
+  final int finalPrice;
 
   ProductOrderModel({
     required this.id,
     required this.productId,
     required this.orderId,
     required this.isTester,
-    required this.quantity
+    required this.quantity,
+    required this.finalPrice
   });
 
-  static ProductOrderModel empty() => ProductOrderModel(id: '', productId: '', orderId: '', isTester: false, quantity: 0);
+  static ProductOrderModel empty() => ProductOrderModel(id: '', productId: '', orderId: '', isTester: false, quantity: 0, finalPrice: 0);
   
   // Convert to JSON structure for Firebase
   Map<String, dynamic> toJson() {
@@ -24,7 +26,8 @@ class ProductOrderModel {
       'productId': productId,
       'orderId': orderId,
       'isTester': isTester,
-      'quantity': quantity
+      'quantity': quantity,
+      'productFinalPrice': finalPrice
     };
   }
 
@@ -33,11 +36,12 @@ class ProductOrderModel {
     if (document.data() != null) {
       final data = document.data()!;
       return ProductOrderModel(
-        id: document.id,
+        id: data['itemID'] as String,
         productId: data['productId'] as String,
         orderId: data['orderId'] as String,
         isTester: data['isTester'] as bool,
-        quantity: data['quantity'] as int
+        quantity: data['quantity'] as int,
+        finalPrice: data['productFinalPrice'] as int
         );
     } else {
       return ProductOrderModel.empty();

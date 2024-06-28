@@ -11,6 +11,11 @@ class OrderModel {
   String shipmentStatus;
   final String deliveryMethod;
   final String paymentMethod;
+  final String orderDate;
+  String deliveryDate;
+  String pickupLocation;
+  final int points;
+  final int finalPrice;
 
   OrderModel({
     required this.id,
@@ -22,11 +27,16 @@ class OrderModel {
     required this.phoneNo,
     required this.shipmentStatus,
     required this.deliveryMethod,
-    required this.paymentMethod
+    required this.paymentMethod,
+    required this.orderDate,
+    required this.deliveryDate,
+    required this.pickupLocation,
+    required this.points,
+    required this.finalPrice
   });
 
   /// Create Empty func for clean code
-  static OrderModel empty() => OrderModel(id: '', userId: '', address: '', firstName: '', lastName: '', email: '', phoneNo: '', shipmentStatus: '', deliveryMethod: '', paymentMethod: '');
+  static OrderModel empty() => OrderModel(id: '', userId: '', address: '', firstName: '', lastName: '', email: '', phoneNo: '', shipmentStatus: '', deliveryMethod: '', paymentMethod: '', orderDate: '', deliveryDate: '', pickupLocation: '', points: 0, finalPrice: 0);
 
   /// Json Format
   toJson() {
@@ -40,7 +50,12 @@ class OrderModel {
       'customerPhoneNo': phoneNo,
       'shipmentStatus': shipmentStatus,
       'deliveryMethod': deliveryMethod,
-      'paymentMethod': paymentMethod
+      'paymentMethod': paymentMethod,
+      'orderDate': orderDate,
+      'deliveryDate': deliveryDate,
+      'pickupLocation': pickupLocation,
+      'orderFinalPrice': finalPrice,
+      'orderPoints': points
     };
   }
 
@@ -57,7 +72,12 @@ class OrderModel {
       phoneNo: data['customerPhoneNo'] as String,
       shipmentStatus: data['shipmentStatus'] as String,
       deliveryMethod: data['deliveryMethod'] as String,
-      paymentMethod: data['paymentMethod'] as String
+      paymentMethod: data['paymentMethod'] as String,
+      orderDate: data['orderDate'] as String,
+      deliveryDate: data['deliveryDate'] as String,
+      pickupLocation: data['pickupLocation'] as String,
+      finalPrice: data['orderFinalPrice'] as int,
+      points: data['orderPoints'] as int
     );
   }
 }

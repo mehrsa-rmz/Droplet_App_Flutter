@@ -28,7 +28,7 @@ class PromotionOrderModel {
       final data = document.data()!;
       return PromotionOrderModel(
         id: document.id,
-        promotionId: data['productId'] as String,
+        promotionId: data['promotionId'] as String,
         orderId: data['orderId'] as String
         );
     } else {

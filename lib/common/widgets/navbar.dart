@@ -42,6 +42,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         }
       });
     }
+    CartItemsController.instance.fetchCartItemsForCartId(UserController.instance.currentCart.value.id);
   }
 
   void fetchCartItemsCount() async {
@@ -58,6 +59,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
+    CartItemsController.instance.fetchCartItemsForCartId(UserController.instance.currentCart.value.id);
     return BottomAppBar(
       clipBehavior: Clip.antiAlias,
       color: blue7,
@@ -85,17 +87,17 @@ class _BottomNavBarState extends State<BottomNavBar> {
                 text: "Explore",
                 icon: CupertinoIcons.compass,
                 selected: widget.selectedOption == 'explore',
-                onPressed: () => Get.to(() => const ExploreScreen())),
+                onPressed: () => Get.offAll(() => const ExploreScreen())),
               IconBottomBar(
                 text: "Products",
                 icon: CupertinoIcons.square_grid_2x2,
                 selected: widget.selectedOption == 'products',
-                onPressed: () => Get.to(() => const ProductCategoriesScreen())),
+                onPressed: () => Get.offAll(() => const ProductCategoriesScreen())),
               IconBottomBar(
                 text: "Profile",
                 icon: CupertinoIcons.person,
                 selected: widget.selectedOption == 'profile',
-                onPressed: () => Get.to(() => const ProfileScreen())),
+                onPressed: () => Get.offAll(() => const ProfileScreen())),
               user != null ?
               Obx(() => IconBottomBarWithBadge(
                 text: "Favorites",
@@ -114,7 +116,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                 number: CartItemsController.instance.cartItemCount.value,
                 icon: CupertinoIcons.cart,
                 selected: widget.selectedOption == 'cart',
-                onPressed: () => Get.to(() => const ShoppingCartScreen())),
+                onPressed: () => Get.offAll(() => const ShoppingCartScreen())),
               )
             ],
           ),

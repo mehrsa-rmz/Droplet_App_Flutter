@@ -3,7 +3,7 @@ import 'package:flutter_application/features/order/models/cart_model.dart';
 import 'package:get/get.dart';
 
 class CartRepository extends GetxController {
-  static CartRepository get instance => Get.find();
+  static CartRepository get instance => Get.put(CartRepository());
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
@@ -21,7 +21,7 @@ class CartRepository extends GetxController {
 
   Future<CartModel?> fetchAnonymousCart() async {
     final querySnapshot = await _db.collection('Carts')
-        .where('customerId', isEqualTo: '')
+        .where('customerId' == "")
         .limit(1)
         .get();
 
@@ -46,12 +46,22 @@ class CartRepository extends GetxController {
     try {
       // Fetch all cart items associated with the given cart ID
       final cartItemsQuery = await _db.collection('CartItems')
-          .where('cartId', isEqualTo: cartId)
-          .get();
+        .where('cartId', isEqualTo: cartId)
+        .get();
+
+      // Fetch all cart promos associated with the given cart ID
+      final cartPromosQuery = await _db.collection('PromotionsCarts')
+        .where('cartId', isEqualTo: cartId)
+        .get();
 
       // Delete each cart item
       for (var doc in cartItemsQuery.docs) {
         await _db.collection('CartItems').doc(doc.id).delete();
+      }
+
+      // Delete each cart promo
+      for (var doc in cartPromosQuery.docs) {
+        await _db.collection('PromotionsCarts').doc(doc.id).delete();
       }
 
       // Delete the cart itself

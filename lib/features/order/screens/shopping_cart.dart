@@ -50,29 +50,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
   @override
   void initState() {
     super.initState();
-    //fetchUserData();
     fetchCartData();
-  }
-
-  Future<void> fetchUserData() async {
-    if (user != null) {
-      String userId = user!.uid;
-      userModel = await UserController.fetchUserById(userId);
-
-      if (userModel != null) {
-        print('User fetched successfully: ${userModel!.fullName}');
-        currentCart = await CartRepository.instance.fetchUserCart(userId);
-        currentCartId = currentCart.id;
-        print('currentCartId: $currentCartId');
-      } else {
-        print('User not found.');
-        currentCart = (await CartRepository.instance.fetchAnonymousCart())!;
-        currentCartId = currentCart.id;
-        print('currentCartId: $currentCartId');
-      }
-    } else {
-      print('No user is currently signed in.');
-    }
   }
 
   Future<void> fetchCartData() async {
@@ -87,12 +65,15 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
         print('currentCartId: $currentCartId');
       } else {
         print('User not found.');
-        currentCart = (await CartRepository.instance.fetchAnonymousCart())!;
+        currentCart = await CartRepository.instance.fetchUserCart('');
         currentCartId = currentCart.id;
         print('currentCartId: $currentCartId');
       }
     } else {
       print('No user is currently signed in.');
+      currentCart = await CartRepository.instance.fetchUserCart('');
+      currentCartId = currentCart.id;
+      print('currentCartId: $currentCartId');
     }
 
     totalPrice = 0;
@@ -178,38 +159,28 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
   }
 
   Future<void> updateTesterItem(CartItemModel cartItem) async {
-    cartItem.isTester = false;
-    await _cartItemsController.updateCartItem(cartItem.id, cartItem);
+    bool found = false;
+    for(var ci in cartItemModels){
+      if(ci.productId == cartItem.productId && ci.isTester == false) {
+        await updateCartItem(ci, ci.quantity + 1);
+        await _cartItemsController.deleteCartItem(cartItem.id);
+        found = true;
+      }
+    }
+    if (found == false){
+      cartItem.isTester = false;
+      await _cartItemsController.updateCartItem(cartItem.id, cartItem);
+    }
+
     await _cartItemsController.fetchCartItemsForCartId(cartItem.cartId);
+    await fetchCartData();
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
 
     // TODO loyalty program deduction
-
-    // if (widget.isLogged){
-    //   bool ok;
-    //   if (points >= 3000) {
-    //     ok = true;
-    //     for(var product in promoCodesAdded) {
-    //       if (product['code'] == 'Gold member') ok = false;
-    //     }
-    //     if (ok) promoCodesAdded.add({'code': 'Gold member', 'promotion': 20, 'difference': 0});
-    //   } else if (points >= 2000) {
-    //     ok = true;
-    //     for(var product in promoCodesAdded) {
-    //       if (product['code'] == 'Silver member') ok = false;
-    //     }
-    //     promoCodesAdded.add({'code': 'Silver member', 'promotion': 10, 'difference': 0});
-    //   } else if (points >= 1000) {
-    //     ok = true;
-    //     for(var product in promoCodesAdded) {
-    //       if (product['code'] == 'Bronze member') ok = false;
-    //     }
-    //     promoCodesAdded.add({'code': 'Bronze member', 'promotion': 5, 'difference': 0});
-    //   }
-    // }
 
     return Scaffold(
       bottomNavigationBar: const BottomNavBar(selectedOption: 'cart',),
@@ -333,7 +304,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                     ButtonType(text: 'Add code', color: red5, type: 'primary', onPressed: () async {
                                       PromotionModel? promoToAdd = await PromotionController.instance.getPromotionById(promoCodeController.text.trim());
                                       if (promoToAdd == null){
-                                        TLoaders.errorSnackBar(title: 'No such promo code');
+                                        TLoaders.errorSnackBar(title: 'Error', message: 'No such promo code.');
                                       } else {
                                         var ok = true;
                                         for(var cp in cartPromoModels){
@@ -346,7 +317,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                           fetchCartData();
                                           setState(() {});
                                         } else {
-                                          TLoaders.errorSnackBar(title: 'Promo code already applied');
+                                          TLoaders.errorSnackBar(title: 'Error', message: 'Promo code already applied.');
                                         }
                                       }
                                     },),
@@ -399,12 +370,9 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text('Total:',
-                                            style:
-                                                tMenu.copyWith(color: black)),
-                                        Text(
-                                            '${totalPrice.toStringAsFixed(1)} RON',
-                                            style:
-                                                tButton.copyWith(color: blue7))
+                                            style: tMenu.copyWith(color: black)),
+                                        Text('${totalPrice.toStringAsFixed(1)} RON',
+                                            style: tButton.copyWith(color: blue7))
                                       ],
                                     ),
                                     if (currentCartPromos.isNotEmpty)
@@ -428,8 +396,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                         padding: const EdgeInsets.only(top: 12),
                                         child: Text(
                                             '${reducedPrice.toStringAsFixed(1)} RON',
-                                            style:
-                                                tMenu.copyWith(color: blue7)),
+                                            style: tMenu.copyWith(color: blue7)),
                                       ),
                                     )
                                   ],

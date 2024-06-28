@@ -3,7 +3,7 @@ class TValidator{
 
   /// Empty Text Validation
   static String? validateEmptyText(String? fieldName, String? value) {
-    if (value == null || value.isEmpty) {
+    if (value == null || value.isEmpty || value == '') {
       return '$fieldName is required.';
     }
 
@@ -12,7 +12,7 @@ class TValidator{
 
   /// Email Validation
   static String? validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
+    if (value == null || value.isEmpty || value == '') {
       return 'Email is required.';
     }
 
@@ -28,7 +28,7 @@ class TValidator{
 
   /// Password Validation
   static String? validatePassword(String? value){
-    if(value == null || value.isEmpty){
+    if(value == null || value.isEmpty || value == ''){
       return 'Password is required.';
     }
 
@@ -62,7 +62,7 @@ class TValidator{
 
   /// Repeat Password Validation
   static String? validateRepeatPassword(String? password, String? value){
-    if(value == null || value.isEmpty){
+    if(value == null || value.isEmpty || value == ''){
       return 'Repeating password is required';
     }
 
@@ -75,7 +75,7 @@ class TValidator{
 
   /// Phone Number Validation
   static String? validatePhoneNumber(String? value){
-    if(value == null || value.isEmpty){
+    if(value == null || value.isEmpty || value == ''){
       return 'Phone number is required';
     }
   

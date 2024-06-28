@@ -84,7 +84,7 @@ class CartItemsController extends GetxController {
         return await CartItemModel.fromSnapshot(doc);
       }).toList());
       cartItems.assignAll(items);
-      cartItemCount.value = items.length;
+      //cartItemCount.value = items.length;
     });
   }
 
