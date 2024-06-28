@@ -174,7 +174,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               spreadRadius: 0,
                               blurRadius: 30,
                               offset: Offset(
-                                  0, 8), // (0, -8) for BottomBarNavigation
+                                  0, 8), 
                             )
                           ],
                         ),
@@ -240,7 +240,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               spreadRadius: 0,
                               blurRadius: 30,
                               offset: Offset(
-                                  0, 8), // (0, -8) for BottomBarNavigation
+                                  0, 8), 
                             )
                           ],
                         ),
@@ -386,7 +386,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               spreadRadius: 0,
                               blurRadius: 30,
                               offset: Offset(
-                                  0, 8), // (0, -8) for BottomBarNavigation
+                                  0, 8), 
                             )
                           ],
                         ),
@@ -464,7 +464,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               spreadRadius: 0,
                               blurRadius: 30,
                               offset: Offset(
-                                  0, 8), // (0, -8) for BottomBarNavigation
+                                  0, 8), 
                             )
                           ],
                         ),

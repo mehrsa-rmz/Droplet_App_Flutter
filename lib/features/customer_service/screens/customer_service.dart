@@ -91,7 +91,7 @@ class CustomerSupportScreen extends StatelessWidget {
                             spreadRadius: 0,
                             blurRadius: 30,
                             offset:
-                                Offset(0, 8), // (0, -8) for BottomBarNavigation
+                                Offset(0, 8), 
                           )
                         ],
                       ),
@@ -112,7 +112,7 @@ class CustomerSupportScreen extends StatelessWidget {
                           spreadRadius: 0,
                           blurRadius: 30,
                           offset:
-                              Offset(0, 8), // (0, -8) for BottomBarNavigation
+                              Offset(0, 8), 
                         )
                       ],
                     ),

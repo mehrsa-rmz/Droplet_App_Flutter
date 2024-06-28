@@ -1,13 +1,26 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/data/repositories/cart_repository.dart';
+import 'package:flutter_application/features/order/controllers/cart_item_controller.dart';
+import 'package:flutter_application/features/order/controllers/promotion_cart_controller.dart';
+import 'package:flutter_application/features/order/controllers/promotion_controller.dart';
+import 'package:flutter_application/features/order/models/cart_item_model.dart';
+import 'package:flutter_application/features/order/models/cart_model.dart';
+import 'package:flutter_application/features/order/models/promotion_cart_model.dart';
+import 'package:flutter_application/features/order/models/promotion_model.dart';
 import 'package:flutter_application/features/order/screens/checkout.dart';
+import 'package:flutter_application/features/products/controllers/product_controller.dart';
+import 'package:flutter_application/features/products/models/product_model.dart';
+import 'package:flutter_application/features/profile/controllers/user_controller.dart';
+import 'package:flutter_application/features/profile/models/user_model.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
 import 'package:flutter_application/utils/constants/text_styles.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
 import 'package:flutter_application/common/widgets/buttons.dart';
 import 'package:flutter_application/common/widgets/inputs.dart';
 import 'package:flutter_application/common/widgets/navbar.dart';
+import 'package:flutter_application/utils/popups/loaders.dart';
 import 'package:get/get.dart';
 
 class ShoppingCartScreen extends StatefulWidget {
@@ -19,98 +32,161 @@ class ShoppingCartScreen extends StatefulWidget {
 
 class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
   User? user = FirebaseAuth.instance.currentUser;
+  UserModel? userModel;
+  TextEditingController promoCodeController= TextEditingController();
+  final _cartItemsController = Get.put(CartItemsController());
+  final _cartPromosController = Get.put(PromotionCartController());
+  final _userController = Get.put(UserController());
+  double totalPrice = 0;
+  double reducedPrice = 0;
+  late CartModel currentCart;
+  late String currentCartId;
+  
+  List<Map<String, dynamic>> currentCartItems = [];
+  List<CartItemModel> cartItemModels = [];
+  List<Map<String, dynamic>> currentCartPromos = [];
+  List<PromotionCartModel> cartPromoModels = [];
 
-  final List<Map<String, dynamic>> _products = [
-    {
-      'isTester': true,
-      'quantity': 1,
-      'category': 'hair',
-      'sex': 'f',
-      'age': 'all',
-      'conditions': ['thin hair', 'dandruff'],
-      'hypoallergenic': true,
-      'name': 'Hair Mousse',
-      'price': 120.0,
-      'reviewsNo': 21,
-      'rating': 4.85,
-      'favorite': false,
-      'outOfStock': false,
-      'noOfOrders': 10,
-      'promotion': 0,
-      'description':
-          'This is a very long message meant for completing the text area input in order to make it look better. This is a very long message meant for completing the text area input in order to make it look better.',
-      'ingredients': ['Water', 'Jojoba oil', 'Glycerin', 'Rose extract']
-    },
-    {
-      'isTester': false,
-      'quantity': 1,
-      'category': 'hair',
-      'sex': 'f',
-      'age': 'all',
-      'conditions': ['thin hair', 'dandruff'],
-      'hypoallergenic': true,
-      'name': 'Shampoo',
-      'price': 95.0,
-      'reviewsNo': 10,
-      'rating': 4.55,
-      'favorite': true,
-      'outOfStock': false,
-      'noOfOrders': 5,
-      'promotion': -20,
-      'description':
-          'This is a very long message meant for completing the text area input in order to make it look better. This is a very long message meant for completing the text area input in order to make it look better.',
-      'ingredients': ['Water', 'Jojoba oil', 'Glycerin', 'Rose extract']
-    },
-    {
-      'isTester': false,
-      'quantity': 2,
-      'category': 'hair',
-      'sex': 'f',
-      'age': 'all',
-      'conditions': ['thin hair', 'dandruff'],
-      'hypoallergenic': true,
-      'name': 'Conditioner',
-      'price': 70.0,
-      'reviewsNo': 6,
-      'rating': 5.0,
-      'favorite': false,
-      'outOfStock': false,
-      'noOfOrders': 2,
-      'promotion': 0,
-      'description':
-          'This is a very long message meant for completing the text area input in order to make it look better. This is a very long message meant for completing the text area input in order to make it look better.',
-      'ingredients': ['Water', 'Jojoba oil', 'Glycerin', 'Rose extract']
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    //fetchUserData();
+    fetchCartData();
+  }
 
-  final List<Map<String, dynamic>> promoCodes = [
-    {'code': 'XHDG-156-D', 'promotion': 10, 'difference': 0},
-    {'code': 'Carmen20', 'promotion': 20, 'difference': 0},
-    {'code': 'Extra30', 'promotion': -30, 'difference': 0},
-    {'code': 'Extra15', 'promotion': -15, 'difference': 0},
-  ];
+  Future<void> fetchUserData() async {
+    if (user != null) {
+      String userId = user!.uid;
+      userModel = await UserController.fetchUserById(userId);
 
-  final List<Map<String, dynamic>> promoCodesAdded = [
-    {'code': 'Carmen20', 'promotion': 20, 'difference': 0},
-    {'code': 'Extra15', 'promotion': -15, 'difference': 0},
-  ];
+      if (userModel != null) {
+        print('User fetched successfully: ${userModel!.fullName}');
+        currentCart = await CartRepository.instance.fetchUserCart(userId);
+        currentCartId = currentCart.id;
+        print('currentCartId: $currentCartId');
+      } else {
+        print('User not found.');
+        currentCart = (await CartRepository.instance.fetchAnonymousCart())!;
+        currentCartId = currentCart.id;
+        print('currentCartId: $currentCartId');
+      }
+    } else {
+      print('No user is currently signed in.');
+    }
+  }
 
-  final TextEditingController promoCodeController = TextEditingController();
+  Future<void> fetchCartData() async {
+    if (user != null) {
+      String userId = user!.uid;
+      userModel = await UserController.fetchUserById(userId);
+
+      if (userModel != null) {
+        print('User fetched successfully: ${userModel!.fullName}');
+        currentCart = await CartRepository.instance.fetchUserCart(userId);
+        currentCartId = currentCart.id;
+        print('currentCartId: $currentCartId');
+      } else {
+        print('User not found.');
+        currentCart = (await CartRepository.instance.fetchAnonymousCart())!;
+        currentCartId = currentCart.id;
+        print('currentCartId: $currentCartId');
+      }
+    } else {
+      print('No user is currently signed in.');
+    }
+
+    totalPrice = 0;
+    reducedPrice = 0;
+
+    currentCartItems = [];
+    currentCartId = _userController.currentCart.value.id;
+    print('currentCartId: $currentCartId');
+    cartItemModels = await _cartItemsController.fetchCartItemsForCartId(currentCartId);
+    print('cartItemModels: $cartItemModels');
+    cartPromoModels = await _cartPromosController.fetchCartPromotionsForCartId(currentCartId);
+    print('cartPromoModels: $cartPromoModels');
+    
+    for(var ci in cartItemModels){
+      ProductModel? productToAdd = await ProductController.instance.getProductById(ci.productId);
+      currentCartItems.add(
+        {
+          'id': ci.id,
+          'name': productToAdd?.name ?? '',
+          'price': productToAdd?.price ?? 0,
+          'isTester': ci.isTester,
+          'quantity': ci.quantity,
+          'promotion': productToAdd?.promotion ?? 0,
+          'stock': productToAdd?.stock ?? 0,
+        }
+      );
+      if (!ci.isTester) {
+        int productPrice = productToAdd?.price ?? 0;
+        int promotion = productToAdd?.promotion ?? 0;
+
+        double finalProductPrice;
+        if (promotion < 0) {
+          finalProductPrice = (productPrice + promotion).toDouble();
+        } else if (promotion > 0) {
+          finalProductPrice = productPrice * (100 - promotion) / 100;
+        } else {
+          finalProductPrice = productPrice.toDouble();
+        }
+
+        totalPrice += ci.quantity * finalProductPrice;
+      }
+    }
+
+    reducedPrice = totalPrice;
+    print('currentCartItems: $currentCartItems');
+    print('totalPrice: $totalPrice');
+
+    currentCartPromos = [];
+    for (var pc in cartPromoModels) {
+      PromotionModel? promoToAdd = await PromotionController.instance.getPromotionById(pc.promotionId);
+      if (promoToAdd != null) {
+        int promotionAmount = promoToAdd.amount;
+        double deduction;
+        if (promotionAmount < 0) {
+          deduction = promotionAmount.toDouble();
+        } else {
+          deduction = reducedPrice * promotionAmount / 100;
+        }
+        reducedPrice -= deduction;
+
+        currentCartPromos.add({
+          'code': promoToAdd.id,
+          'promotion': promotionAmount,
+          'difference': deduction,
+        });
+      }
+    }
+
+    print('currentCartPromos: $currentCartPromos');
+    print('reducedPrice: $reducedPrice');
+
+    setState(() {});
+  }
+
+  Future<void> updateCartItem(CartItemModel cartItem, int quantity) async {
+    cartItem.quantity = quantity;
+    if (quantity > 0) {
+      await _cartItemsController.updateCartItem(cartItem.id, cartItem);
+    } else {
+      await _cartItemsController.deleteCartItem(cartItem.id);
+    }
+    await _cartItemsController.fetchCartItemsForCartId(cartItem.cartId);
+  }
+
+  Future<void> updateTesterItem(CartItemModel cartItem) async {
+    cartItem.isTester = false;
+    await _cartItemsController.updateCartItem(cartItem.id, cartItem);
+    await _cartItemsController.fetchCartItemsForCartId(cartItem.cartId);
+  }
 
   @override
   Widget build(BuildContext context) {
-    double totalPrice = 0;
-    for (var product in _products) {
-      totalPrice += product['isTester']
-          ? 0
-          : product['promotion'] == 0
-              ? (product['price'] * product['quantity'])
-              : (product['promotion'] < 0
-                  ? ((product['price'] + product['promotion']) *
-                      product['quantity'])
-                  : ((product['price'] * (100 - product['promotion']) / 100) *
-                      product['quantity']));
-    }
+
+    // TODO loyalty program deduction
 
     // if (widget.isLogged){
     //   bool ok;
@@ -134,15 +210,6 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
     //     promoCodesAdded.add({'code': 'Bronze member', 'promotion': 5, 'difference': 0});
     //   }
     // }
-
-    double reducedPrice = totalPrice;
-    for (var promotion in promoCodesAdded) {
-      promotion['difference'] = reducedPrice;
-      reducedPrice += promotion['promotion'] < 0
-          ? promotion['promotion']
-          : -(reducedPrice * promotion['promotion'] / 100);
-      promotion['difference'] -= reducedPrice;
-    }
 
     return Scaffold(
       bottomNavigationBar: const BottomNavBar(selectedOption: 'cart',),
@@ -187,7 +254,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                   const SizedBox(
                     height: 32,
                   ),
-                  _products.isEmpty
+                  currentCartItems.isEmpty
                       ? Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
@@ -198,8 +265,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                 color: Color(0x59223944),
                                 spreadRadius: 0,
                                 blurRadius: 30,
-                                offset: Offset(
-                                    0, 8), // (0, -8) for BottomBarNavigation
+                                offset: Offset(0, 8),
                               )
                             ],
                           ),
@@ -208,35 +274,35 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                               style: tButton.copyWith(color: black)))
                       : Column(
                           children: [
-                            for (var product in _products)
-                              OrderProductBox(
+                            for (var product in currentCartItems)
+                              CartItemBox(
                                 name: product['name'],
                                 isTester: product['isTester'],
                                 quantity: product['quantity'],
-                                price: product['price'],
+                                price: product['promotion'] == 0 ? product['price'].toDouble() : product['promotion'] < 0 ? (product['price'] + product['promotion']).toDouble() : (product['price'] - product['price'] * product['promotion'] / 100).toDouble(),
                                 promotion: product['promotion'],
-                                onPressedChange: () {
-                                  setState(() {
-                                    product['isTester'] = false;
-                                  });
+                                onPressedChange: () async {
+                                  final cartItemToUpdate = await _cartItemsController.getCartItemById(product['id']);
+                                  updateTesterItem(cartItemToUpdate!);
+                                  fetchCartData();
+                                  setState(() {});
                                 },
-                                onPressedMinus: () {
-                                  setState(() {
-                                    product['quantity']--;
-                                    if (product['quantity'] == 0) {
-                                      _products.remove(product);
-                                    }
-                                  });
+                                onPressedMinus: () async {
+                                  final cartItemToUpdate = await _cartItemsController.getCartItemById(product['id']);
+                                  updateCartItem(cartItemToUpdate!, cartItemToUpdate.quantity - 1);
+                                  fetchCartData();
+                                  setState(() {});
                                 },
-                                onPressedPlus: () {
-                                  setState(() {
-                                    product['quantity']++;
-                                  });
+                                onPressedPlus: () async {
+                                  final cartItemToUpdate = await _cartItemsController.getCartItemById(product['id']);
+                                  updateCartItem(cartItemToUpdate!, cartItemToUpdate.quantity + 1);
+                                  fetchCartData();
+                                  setState(() {});
                                 },
-                                onPressedX: () {
-                                  setState(() {
-                                    _products.remove(product);
-                                  });
+                                onPressedX: () async {
+                                  await _cartItemsController.deleteCartItem(product['id']);
+                                  fetchCartData();
+                                  setState(() {});
                                 },
                               ),
                             Container(
@@ -250,20 +316,42 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                       spreadRadius: 0,
                                       blurRadius: 30,
                                       offset: Offset(0,
-                                          8), // (0, -8) for BottomBarNavigation
+                                          8), 
                                     )
                                   ],
                                 ),
                                 child: Column(
                                   children: [
                                     InputType(
-                                        type: 'one-line',
-                                        inputType: TextInputType.text,
-                                        placeholder: 'Promo code',
-                                        mustBeFilled: true,
-                                        ),
-                                    if (promoCodesAdded.isNotEmpty)
-                                      for (var code in promoCodesAdded)
+                                      controller: promoCodeController,
+                                      type: 'one-line',
+                                      inputType: TextInputType.text,
+                                      placeholder: 'Promo code',
+                                      mustBeFilled: true,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ButtonType(text: 'Add code', color: red5, type: 'primary', onPressed: () async {
+                                      PromotionModel? promoToAdd = await PromotionController.instance.getPromotionById(promoCodeController.text.trim());
+                                      if (promoToAdd == null){
+                                        TLoaders.errorSnackBar(title: 'No such promo code');
+                                      } else {
+                                        var ok = true;
+                                        for(var cp in cartPromoModels){
+                                          if (cp.promotionId == promoToAdd.id){
+                                            ok = false;
+                                          }
+                                        }
+                                        if (ok) {
+                                          await PromotionCartController.instance.addCartPromotion(PromotionCartModel(id: 'PromoCart_${promoToAdd.id}_$currentCartId', promotionId: promoToAdd.id, cartId: currentCartId));
+                                          fetchCartData();
+                                          setState(() {});
+                                        } else {
+                                          TLoaders.errorSnackBar(title: 'Promo code already applied');
+                                        }
+                                      }
+                                    },),
+                                    if (currentCartPromos.isNotEmpty)
+                                      for (var code in currentCartPromos)
                                         Padding(
                                           padding:
                                               const EdgeInsets.only(top: 12),
@@ -299,7 +387,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                       spreadRadius: 0,
                                       blurRadius: 30,
                                       offset: Offset(0,
-                                          8), // (0, -8) for BottomBarNavigation
+                                          8), 
                                     )
                                   ],
                                 ),
@@ -319,8 +407,8 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                                 tButton.copyWith(color: blue7))
                                       ],
                                     ),
-                                    if (promoCodesAdded.isNotEmpty)
-                                      for (var promotion in promoCodesAdded)
+                                    if (currentCartPromos.isNotEmpty)
+                                      for (var promotion in currentCartPromos)
                                         Padding(
                                           padding:
                                               const EdgeInsets.only(top: 12),
@@ -398,8 +486,8 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
   }
 }
 
-class OrderProductBox extends StatelessWidget {
-  const OrderProductBox(
+class CartItemBox extends StatelessWidget {
+  const CartItemBox(
       {super.key,
       required this.name,
       required this.isTester,
@@ -434,7 +522,7 @@ class OrderProductBox extends StatelessWidget {
               color: Color(0x59223944),
               spreadRadius: 0,
               blurRadius: 30,
-              offset: Offset(0, 8), // (0, -8) for BottomBarNavigation
+              offset: Offset(0, 8), 
             )
           ],
         ),
@@ -507,10 +595,10 @@ class OrderProductBox extends StatelessWidget {
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('$quantity x $price RON',
+                          Text('$quantity x ${price.toStringAsFixed(1)} RON',
                               style: tParagraph.copyWith(color: black)),
                           const SizedBox(height: 4),
-                          Text('${quantity * price} RON',
+                          Text('${(quantity * price).toStringAsFixed(1)} RON',
                               style: tFilter.copyWith(
                                   color: blue7, fontWeight: FontWeight.w800))
                         ],

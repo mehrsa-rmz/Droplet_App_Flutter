@@ -28,7 +28,7 @@ class PromotionCartModel {
       final data = document.data()!;
       return PromotionCartModel(
         id: document.id,
-        promotionId: data['productId'] as String,
+        promotionId: data['promotionId'] as String,
         cartId: data['cartId'] as String
         );
     } else {

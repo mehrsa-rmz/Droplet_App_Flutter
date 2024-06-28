@@ -503,7 +503,7 @@ class _PersonalRecScreenState extends State<PersonalRecScreen> {
                                         spreadRadius: 0,
                                         blurRadius: 30,
                                         offset: Offset(0,
-                                            8), // (0, -8) for BottomBarNavigation
+                                            8), 
                                       )
                                     ],
                                   ),
@@ -609,7 +609,7 @@ Widget productBox(
               color: Color(0x59223944),
               spreadRadius: 0,
               blurRadius: 30,
-              offset: Offset(0, 8), // (0, -8) for BottomBarNavigation
+              offset: Offset(0, 8), 
             )
           ],
         ),

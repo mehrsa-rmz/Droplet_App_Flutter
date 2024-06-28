@@ -155,7 +155,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           spreadRadius: 0,
                                           blurRadius: 30,
                                           offset: Offset(0,
-                                              8), // (0, -8) for BottomBarNavigation
+                                              8), 
                                         )
                                       ],
                                     ),
@@ -785,7 +785,7 @@ class OrderBox extends StatelessWidget {
             color: Color(0x59223944),
             spreadRadius: 0,
             blurRadius: 30,
-            offset: Offset(0, 8), // (0, -8) for BottomBarNavigation
+            offset: Offset(0, 8), 
           )
         ],
       ),
@@ -888,12 +888,6 @@ class OrderBox extends StatelessWidget {
               ],
             ),
         ]),
-        ButtonType(
-          text: 'Order again',
-          color: blue7,
-          type: 'secondary',
-          onPressed: () {},
-        )
       ]),
     );
   }

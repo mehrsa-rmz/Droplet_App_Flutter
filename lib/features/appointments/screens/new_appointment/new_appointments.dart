@@ -147,7 +147,7 @@ class _NewAppointmentsScreenState extends State<NewAppointmentsScreen> {
                                 spreadRadius: 0,
                                 blurRadius: 30,
                                 offset: Offset(
-                                    0, 8), // (0, -8) for BottomBarNavigation
+                                    0, 8), 
                               ),
                             ],
                           ),
@@ -184,7 +184,7 @@ class _NewAppointmentsScreenState extends State<NewAppointmentsScreen> {
                                   spreadRadius: 0,
                                   blurRadius: 30,
                                   offset: Offset(
-                                      0, 8), // (0, -8) for BottomBarNavigation
+                                      0, 8), 
                                 ),
                               ],
                             ),
@@ -227,7 +227,7 @@ class _NewAppointmentsScreenState extends State<NewAppointmentsScreen> {
                                 spreadRadius: 0,
                                 blurRadius: 30,
                                 offset: Offset(
-                                    0, 8), // (0, -8) for BottomBarNavigation
+                                    0, 8), 
                               ),
                             ],
                           ),
@@ -272,7 +272,7 @@ class _NewAppointmentsScreenState extends State<NewAppointmentsScreen> {
                                       spreadRadius: 0,
                                       blurRadius: 30,
                                       offset: Offset(0,
-                                          8), // (0, -8) for BottomBarNavigation
+                                          8), 
                                     )
                                   ],
                                 ),
@@ -336,7 +336,7 @@ class SpecialistBox extends StatelessWidget {
               color: Color(0x59223944),
               spreadRadius: 0,
               blurRadius: 30,
-              offset: Offset(0, 8), // (0, -8) for BottomBarNavigation
+              offset: Offset(0, 8), 
             )
           ],
         ),

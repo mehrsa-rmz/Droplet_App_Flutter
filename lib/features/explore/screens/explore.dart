@@ -161,7 +161,7 @@ class ExploreScreen extends StatelessWidget {
                                 spreadRadius: 0,
                                 blurRadius: 30,
                                 offset: Offset(
-                                    0, 8), // (0, -8) for BottomBarNavigation
+                                    0, 8), 
                               )
                             ],
                           ),
@@ -200,7 +200,7 @@ class ExploreScreen extends StatelessWidget {
                                         spreadRadius: 0,
                                         blurRadius: 30,
                                         offset: Offset(0,
-                                            8), // (0, -8) for BottomBarNavigation
+                                            8), 
                                       )
                                     ],
                                   ),
@@ -308,7 +308,7 @@ class ExploreScreen extends StatelessWidget {
                               spreadRadius: 0,
                               blurRadius: 30,
                               offset: Offset(
-                                  0, 8), // (0, -8) for BottomBarNavigation
+                                  0, 8), 
                             )
                           ],
                         ),
@@ -397,7 +397,7 @@ class ExploreScreen extends StatelessWidget {
                               spreadRadius: 0,
                               blurRadius: 30,
                               offset: Offset(
-                                  0, 8), // (0, -8) for BottomBarNavigation
+                                  0, 8), 
                             )
                           ],
                         ),

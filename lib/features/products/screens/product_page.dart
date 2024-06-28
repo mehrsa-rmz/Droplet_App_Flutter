@@ -96,7 +96,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     List<ProductIngredientModel> productIngredients = await ProductIngredientController.instance.fetchAllProductIngredients();
     List<FavoriteModel> favorites = await FavoritesController.instance.fetchCurrentUserFavorites();
     currentProductReviews = await ProductReviewController.instance.fetchAllProductsReviews();
-    await _cartItemsController.fetchCartItemsForCartId(_userController.currentCart.value.id); // Fetch cart items
+    await _cartItemsController.fetchCartItemsForCartId(_userController.currentCart.value.id);
 
     // Fetching product data
     ProductModel? fetchedProduct = await ProductController.instance.getProductById(widget.currentProductId);
@@ -742,7 +742,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   spreadRadius: 0,
                                   blurRadius: 30,
                                   offset: Offset(
-                                      0, 8), // (0, -8) for BottomBarNavigation
+                                      0, 8), 
                                 )
                               ],
                             ),
@@ -796,7 +796,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   spreadRadius: 0,
                                   blurRadius: 30,
                                   offset: Offset(
-                                      0, 8), // (0, -8) for BottomBarNavigation
+                                      0, 8), 
                                 )
                               ],
                             ),
@@ -1009,7 +1009,7 @@ class ReviewBox extends StatelessWidget {
               color: Color(0x59223944),
               spreadRadius: 0,
               blurRadius: 30,
-              offset: Offset(0, 8), // (0, -8) for BottomBarNavigation
+              offset: Offset(0, 8), 
             )
           ],
         ),

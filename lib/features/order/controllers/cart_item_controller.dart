@@ -104,21 +104,15 @@ class CartItemsController extends GetxController {
     }
   }
 
-  Future<String?> getCartItemDocumentIdByItemId(String itemId) async {
+  Future<CartItemModel?> getCartItemById(String id) async {
     try {
-      final querySnapshot = await collection
-          .where('itemID', isEqualTo: itemId)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        return querySnapshot.docs.first.id; // Get the document ID
-      } else {
-        print("No cart item found with itemID: $itemId");
-        return null;
+      final documentSnapshot = await collection.doc(id).get();
+      if (documentSnapshot.exists) {
+        return CartItemModel.fromSnapshot(documentSnapshot);
       }
     } catch (e) {
-      print("Error fetching cart item document ID: $e");
-      return null;
+      print("Error fetching cart item: $e");
     }
+    return null;
   }
 }

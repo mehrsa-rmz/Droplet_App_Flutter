@@ -174,7 +174,7 @@ class _LoyaltyProgramScreenState extends State<LoyaltyProgramScreen> {
                                   spreadRadius: 0,
                                   blurRadius: 30,
                                   offset: Offset(
-                                      0, 8), // (0, -8) for BottomBarNavigation
+                                      0, 8), 
                                 )
                               ],
                             ),
@@ -374,7 +374,7 @@ class AchievementBox extends StatelessWidget {
               color: Color.fromARGB(60, 114, 156, 176),
               spreadRadius: 0,
               blurRadius: 30,
-              offset: Offset(0, 8), // (0, -8) for BottomBarNavigation
+              offset: Offset(0, 8), 
             )
           ],
         ),

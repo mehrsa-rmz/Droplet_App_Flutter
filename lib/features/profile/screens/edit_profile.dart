@@ -78,7 +78,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 spreadRadius: 0,
                                 blurRadius: 30,
                                 offset: Offset(
-                                    0, 8), // (0, -8) for BottomBarNavigation
+                                    0, 8), 
                               )
                             ],
                           ),
