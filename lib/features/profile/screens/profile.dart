@@ -143,13 +143,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       for(var o in currentUserOrders){
         points += o.points;
-        print(o.id);
         List<Map<String, dynamic>> prodList = [];
         List<ProductOrderModel> thisOrderProducts = await ProductOrderController.instance.fetchOrderProductsForOrderId(o.id);
-        print(thisOrderProducts);
         for(var po in thisOrderProducts){
           ProductModel? thisProduct = await ProductController.instance.getProductById(po.productId);
-          print(thisProduct);
           Map<String, dynamic> prod = {'name': thisProduct?.name ?? '', 'quantity': po.quantity, 'price': po.finalPrice, 'isTester': po.isTester};
           prodList.add(prod);
           if(po.isTester && isSameMonth(o.orderDate)){
@@ -167,6 +164,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           'deliveryDate': o.deliveryDate,
           'products': prodList
         });
+
+        // Sorting by descending orderDate
+        userOrders.sort((a, b) => b['orderDate'].compareTo(a['orderDate']));
       }
 
       print(userOrders);

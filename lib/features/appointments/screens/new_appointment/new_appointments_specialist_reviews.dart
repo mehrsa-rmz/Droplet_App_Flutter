@@ -172,7 +172,7 @@ class ReviewBox extends StatelessWidget {
       required this.review});
 
   final String name;
-  final double rating;
+  final int rating;
   final String date;
   final String review;
 

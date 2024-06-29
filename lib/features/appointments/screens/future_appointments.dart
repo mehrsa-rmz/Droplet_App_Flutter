@@ -63,6 +63,7 @@ class _FutureAppointmentsScreenState extends State<FutureAppointmentsScreen> {
         });
       }
     }
+    setState(() {});
   }
 
 
@@ -187,7 +188,16 @@ class _FutureAppointmentsScreenState extends State<FutureAppointmentsScreen> {
                                 runSpacing: 20,
                                 children: <Widget>[
                                   for (var oa in futureApps)
-                                    SpecialistBox(aid: oa['id'], uid: oa['userId'], id: oa['specialistId'], name: oa['specialistName'], date: oa['dateTime'], location: oa['location'], position: oa['position'], image: specialist2,)
+                                    SpecialistBox(
+                                      aid: oa['id'], 
+                                      uid: oa['userId'], 
+                                      id: oa['specialistId'], 
+                                      name: oa['specialistName'], 
+                                      date: oa['dateTime'], 
+                                      location: oa['location'], 
+                                      position: oa['position'], 
+                                      image: specialist2
+                                    )
                                 ]
                               )
                       ],
@@ -213,7 +223,7 @@ class SpecialistBox extends StatelessWidget {
     required this.position,
     required this.date,
     required this.location,
-    required this.image,
+    required this.image
   });
 
   final String aid;
@@ -479,15 +489,17 @@ class SpecialistBox extends StatelessWidget {
                                   const SizedBox(height: 24),
                                   Row(children: [
                                     SizedBox(
-                                        width: context.width / 2 - 6 - 40,
-                                        child: ButtonType(
-                                            text: 'Yes, cancel',
-                                            color: red5,
-                                            type: "primary",
-                                            onPressed: () async =>{
-                                              await deleteAppointment(aid),
-                                              Navigator.of(context).pop()}
-                                            )),
+                                      width: context.width / 2 - 6 - 40,
+                                      child: ButtonType(
+                                        text: 'Yes, cancel',
+                                        color: red5,
+                                        type: "primary",
+                                        onPressed: () async =>{
+                                          await deleteAppointment(aid),
+                                          Navigator.of(context).pop(),
+                                        }
+                                      )
+                                    ),
                                     const SizedBox(width: 12),
                                     SizedBox(
                                         width: context.width / 2 - 6 - 40,

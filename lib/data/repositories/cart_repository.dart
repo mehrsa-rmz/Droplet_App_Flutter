@@ -21,7 +21,7 @@ class CartRepository extends GetxController {
 
   Future<CartModel?> fetchAnonymousCart() async {
     final querySnapshot = await _db.collection('Carts')
-        .where('customerId' == "")
+        .where('customerId', isEqualTo: "")
         .limit(1)
         .get();
 

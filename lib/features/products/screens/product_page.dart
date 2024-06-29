@@ -2,9 +2,13 @@ import 'package:animated_rating_stars/animated_rating_stars.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/data/repositories/order_repository.dart';
 import 'package:flutter_application/features/authentication/screens/login/login.dart';
 import 'package:flutter_application/features/authentication/screens/signup/signup.dart';
 import 'package:flutter_application/features/order/controllers/cart_item_controller.dart';
+import 'package:flutter_application/features/order/controllers/product_order_controller.dart';
+import 'package:flutter_application/features/order/models/order_model.dart';
+import 'package:flutter_application/features/order/models/product_order_model.dart';
 import 'package:flutter_application/features/products/controllers/favorites_controller.dart';
 import 'package:flutter_application/features/products/controllers/ingredinets_controller.dart';
 import 'package:flutter_application/features/products/controllers/product_controller.dart';
@@ -26,6 +30,7 @@ import 'package:flutter_application/common/widgets/inputs.dart';
 import 'package:flutter_application/common/widgets/navbar.dart';
 import 'package:flutter_application/utils/formatters/formatter.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   const ProductDetailsScreen({super.key, required this.currentProductId});
@@ -60,8 +65,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   List<Map<String, dynamic>> currentProductReviewsMap = [];
 
   int inCart = 0;
+  int userTesterNo = 0;
   bool testerAdded = false;
-  bool testerLimitReached = false; // TODO
+  bool testerLimitReached = false;
   bool expanded1 = false;
   bool expanded2 = false;
   bool expanded3 = false;
@@ -83,12 +89,37 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
       if (userModel != null) {
         print('User fetched successfully: ${userModel!.fullName}');
+        List<OrderModel> currentUserOrders = await OrderRepository.instance.fetchCurrentUserOrders();
+        for (var uo in currentUserOrders){
+          List<ProductOrderModel> thisOrderProducts = await ProductOrderController.instance.fetchOrderProductsForOrderId(uo.id);
+          for(var po in thisOrderProducts){
+            if(po.isTester && isSameMonth(uo.orderDate)){
+              userTesterNo ++;
+            }
+          }
+        }
+        List<CartItemModel> currentUserCartItems = await _cartItemsController.fetchCartItemsForCartId(_userController.currentCart.value.id);
+        for(var uci in currentUserCartItems){
+          if(uci.isTester) userTesterNo ++;
+        }
+        testerLimitReached = userTesterNo >= 5;
       } else {
         print('User not found.');
       }
     } else {
       print('No user is currently signed in.');
     }
+  }
+
+  bool isSameMonth(String dateTimeString) {
+    // Parse the input string to a DateTime object
+    DateTime inputDate = DateFormat('yyyy-MM-dd-HH:mm:ss').parse(dateTimeString);
+    
+    // Get the current date
+    DateTime currentDate = DateTime.now();
+    
+    // Compare the month and year
+    return inputDate.year == currentDate.year && inputDate.month == currentDate.month;
   }
 
   Future<void> fetchProductData() async {

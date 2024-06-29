@@ -6,13 +6,5 @@ class GeneralBindings extends Bindings {
   void dependencies() {
     /// -- Core
     Get.put(NetworkManager());
-
-    /// -- Product
-    // Get.put(CheckoutController());
-    // Get.put(VariationController());
-    // Get.put(ImagesController());
-
-    // /// -- Other
-    // Get.put(AddressController());
   }
 }
