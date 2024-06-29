@@ -48,4 +48,16 @@ class ConditionController extends GetxController {
       return [];
     }
   }
+
+  Future<ConditionModel?> getConditionById(String id) async {
+    try {
+      final documentSnapshot = await collection.doc(id).get();
+      if (documentSnapshot.exists) {
+        return ConditionModel.fromSnapshot(documentSnapshot);
+      }
+    } catch (e) {
+      print("Error fetching condition: $e");
+    }
+    return null;
+  }
 }

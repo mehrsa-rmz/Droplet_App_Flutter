@@ -63,7 +63,7 @@ class OrderModel {
   static Future<OrderModel> fromSnapshot(DocumentSnapshot<Map<String, dynamic>> document) async {
     final data = document.data()!;
     return OrderModel(
-      id: document.id,
+      id: data['itemID'] as String,
       userId: data['customerId'] as String,
       address: data['orderAddress'] as String,
       firstName: data['customerFirstName'] as String,

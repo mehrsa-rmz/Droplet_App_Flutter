@@ -1,9 +1,26 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/data/repositories/appointments_repository.dart';
+import 'package:flutter_application/data/repositories/order_repository.dart';
 import 'package:flutter_application/features/authentication/screens/login/login.dart';
 import 'package:flutter_application/features/authentication/screens/signup/signup.dart';
+import 'package:flutter_application/features/order/controllers/product_order_controller.dart';
+import 'package:flutter_application/features/order/models/order_model.dart';
+import 'package:flutter_application/features/order/models/product_order_model.dart';
+import 'package:flutter_application/features/products/controllers/conditions_controller.dart';
+import 'package:flutter_application/features/products/controllers/ingredinets_controller.dart';
+import 'package:flutter_application/features/products/controllers/product_controller.dart';
+import 'package:flutter_application/features/products/controllers/product_review_controller.dart';
+import 'package:flutter_application/features/products/models/condition_model.dart';
+import 'package:flutter_application/features/products/models/ingredient_model.dart';
+import 'package:flutter_application/features/products/models/product_model.dart';
+import 'package:flutter_application/features/profile/controllers/user_allergies_controller.dart';
+import 'package:flutter_application/features/profile/controllers/user_conditions_controller.dart';
 import 'package:flutter_application/features/profile/controllers/user_controller.dart';
+import 'package:flutter_application/features/profile/models/user_allergy_model.dart';
+import 'package:flutter_application/features/profile/models/user_condition_model.dart';
+import 'package:flutter_application/features/profile/models/user_model.dart';
 import 'package:flutter_application/features/profile/screens/edit_profile.dart';
 import 'package:flutter_application/features/profile/screens/loyalty_program.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
@@ -12,6 +29,8 @@ import 'package:flutter_application/utils/constants/colors.dart';
 import 'package:flutter_application/common/widgets/buttons.dart';
 import 'package:flutter_application/common/widgets/navbar.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'dart:math';
 
 // ignore: must_be_immutable
 class ProfileScreen extends StatefulWidget {
@@ -22,71 +41,142 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  User? user = FirebaseAuth.instance.currentUser;
-  final controller = UserController.instance;
-  
-  var testersNo = 2;
   bool expanded = false;
 
-  final List<Map<String, dynamic>> _products = [
-    {
-      'quantity': 1,
-      'category': 'hair',
-      'sex': 'f',
-      'age': 'all',
-      'conditions': ['thin hair', 'dandruff'],
-      'hypoallergenic': true,
-      'name': 'Hair Mousse',
-      'price': 120.toDouble(),
-      'reviewsNo': 21,
-      'rating': 4.85,
-      'favorite': false,
-      'outOfStock': false,
-      'noOfOrders': 10,
-      'promotion': 0,
-      'description':
-          'This is a very long message meant for completing the text area input in order to make it look better. This is a very long message meant for completing the text area input in order to make it look better.',
-      'ingredients': ['Water', 'Jojoba oil', 'Glycerin', 'Rose extract']
-    },
-    {
-      'quantity': 1,
-      'category': 'hair',
-      'sex': 'f',
-      'age': 'all',
-      'conditions': ['thin hair', 'dandruff'],
-      'hypoallergenic': true,
-      'name': 'Shampoo',
-      'price': 95.toDouble(),
-      'reviewsNo': 10,
-      'rating': 4.55,
-      'favorite': true,
-      'outOfStock': false,
-      'noOfOrders': 5,
-      'promotion': -20,
-      'description':
-          'This is a very long message meant for completing the text area input in order to make it look better. This is a very long message meant for completing the text area input in order to make it look better.',
-      'ingredients': ['Water', 'Jojoba oil', 'Glycerin', 'Rose extract']
-    },
-    {
-      'quantity': 2,
-      'category': 'hair',
-      'sex': 'f',
-      'age': 'all',
-      'conditions': ['thin hair', 'dandruff'],
-      'hypoallergenic': true,
-      'name': 'Conditioner',
-      'price': 70.toDouble(),
-      'reviewsNo': 6,
-      'rating': 5.00,
-      'favorite': false,
-      'outOfStock': true,
-      'noOfOrders': 2,
-      'promotion': 0,
-      'description':
-          'This is a very long message meant for completing the text area input in order to make it look better. This is a very long message meant for completing the text area input in order to make it look better.',
-      'ingredients': ['Water', 'Jojoba oil', 'Glycerin', 'Rose extract']
-    },
-  ];
+  User? user = FirebaseAuth.instance.currentUser;
+  final controller = UserController.instance; // for logout
+  UserModel? userModel;
+  Map<String, dynamic> userDetails = {
+    'id': '-',
+    'firstName': '-',
+    'lastName': '-',
+    'phone': '-',
+    'email': '-',
+    'address': '-',
+    'birthday': '-',
+    'gender': '-'
+  };
+  List<String> skinCond = [];
+  List<String> bodyCond = [];
+  List<String> hairCond = [];
+  List<String> prefCond = [];
+  List<String> allergies = [];
+  int points = 100;
+  bool leftProductReview = false;
+  bool wentToAppointment = false;
+
+  int testersNo = 0;
+  List<String> testersOrder = [];
+  List<Map<String, dynamic>> userOrders = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+
+  bool isSameMonth(String dateTimeString) {
+    // Parse the input string to a DateTime object
+    DateTime inputDate = DateFormat('yyyy-MM-dd-HH:mm:ss').parse(dateTimeString);
+    
+    // Get the current date
+    DateTime currentDate = DateTime.now();
+    
+    // Compare the month and year
+    return inputDate.year == currentDate.year && inputDate.month == currentDate.month;
+  }
+
+  Future<void> fetchUserData() async {
+    if (user != null) {
+      String userId = user!.uid;
+      userModel = await UserController.fetchUserById(userId);
+
+      if (userModel != null) {
+        print('User fetched successfully: ${userModel!.fullName}');
+      } else {
+        print('User not found.');
+      }
+
+      leftProductReview = await ProductReviewController.instance.hasUserLeftReview(userId);
+      if(leftProductReview) points += 50;
+      wentToAppointment = await AppointmentRepository.instance.hasUserBeenToAppointment(userId);
+      if(wentToAppointment) points += 50;
+
+      List<UserConditionModel> currentUserConditions = await UserConditionController.instance.fetchUserConditionForUserId(userId);
+      List<UserAllergyModel> currentUserAllergies = await UserAllergyController.instance.fetchUserAllergiesForUserId(userId);
+      List<OrderModel> currentUserOrders = await OrderRepository.instance.fetchCurrentUserOrders();
+
+      userDetails = {
+        'id': userId,
+        'firstName': userModel?.firstName ?? '-',
+        'lastName': userModel?.lastName ?? '-',
+        'phone': userModel?.phoneNo ?? '-',
+        'email': userModel?.email ?? '-',
+        'address': userModel?.address ?? '-',
+        'birthday': userModel?.birthday ?? '-',
+        'gender': (userModel?.gender != 'all') ? (userModel?.gender ?? '-') : '-',
+      };
+
+      for(var uc in currentUserConditions){
+        ConditionModel? conditionToAdd = await ConditionController.instance.getConditionById(uc.conditionId);
+        var condType = conditionToAdd?.type ?? '';
+        var condName = conditionToAdd?.name ?? '';
+        if (condType == 'Body'){
+          bodyCond.add(condName);
+        }
+        if (condType == 'Hair'){
+          hairCond.add(condName);
+        }
+        if (condType == 'Perfume'){
+          prefCond.add(condName);
+        }
+        if (condType == 'Skin'){
+          skinCond.add(condName);
+        }
+      }
+
+      for(var ua in currentUserAllergies){
+        IngredientModel? allergyToAdd = await IngredientController.instance.getIngredientById(ua.ingredientId);
+        var algName = allergyToAdd?.name ?? '';
+        allergies.add(algName);
+      }
+
+      for(var o in currentUserOrders){
+        points += o.points;
+        print(o.id);
+        List<Map<String, dynamic>> prodList = [];
+        List<ProductOrderModel> thisOrderProducts = await ProductOrderController.instance.fetchOrderProductsForOrderId(o.id);
+        print(thisOrderProducts);
+        for(var po in thisOrderProducts){
+          ProductModel? thisProduct = await ProductController.instance.getProductById(po.productId);
+          print(thisProduct);
+          Map<String, dynamic> prod = {'name': thisProduct?.name ?? '', 'quantity': po.quantity, 'price': po.finalPrice, 'isTester': po.isTester};
+          prodList.add(prod);
+          if(po.isTester && isSameMonth(o.orderDate)){
+            testersOrder.add(thisProduct?.name ?? '');
+            testersNo = testersOrder.length;
+          }
+        }
+        
+        userOrders.add({
+          'id': o.id,
+          'status': o.shipmentStatus,
+          'price': o.finalPrice,
+          'points': o.points,
+          'orderDate': o.orderDate,
+          'deliveryDate': o.deliveryDate,
+          'products': prodList
+        });
+      }
+
+      print(userOrders);
+
+      setState(() {});
+
+    } else {
+      print('No user is currently signed in.');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   icon: CupertinoIcons.gift,
                                   color: pink5,
                                   type: 'primary',
-                                  onPressed: () => Get.to(() => const LoyaltyProgramScreen()),
+                                  onPressed: () => Get.to(() => LoyaltyProgramScreen(points: points, leftReview: leftProductReview, hadAppointment: wentToAppointment)),
                                 ),
                                 const SizedBox(
                                   height: 20,
@@ -164,7 +254,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text('Pop Laura',
+                                        Text('${userDetails['firstName']} ${userDetails['lastName']}',
                                             style:
                                                 tMenu.copyWith(color: black)),
                                         const SizedBox(height: 20),
@@ -190,7 +280,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     height: 4,
                                                   ),
                                                   Text(
-                                                    '165432',
+                                                    userDetails['id'],
                                                     style: tParagraphMed
                                                         .copyWith(color: grey8),
                                                   )
@@ -216,7 +306,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     height: 4,
                                                   ),
                                                   Text(
-                                                    '475',
+                                                    points.toString(),
                                                     style: tParagraphMed
                                                         .copyWith(color: grey8),
                                                   )
@@ -233,10 +323,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             SizedBox(
-                                              width: context.width / 2 -
-                                                  6 -
-                                                  20 -
-                                                  16,
+                                              width: context.width / 2 - 6 - 20 - 16,
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
@@ -250,7 +337,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     height: 4,
                                                   ),
                                                   Text(
-                                                    '0722 555 444',
+                                                    userDetails['phone'] == '' ? '-' : userDetails['phone'],
                                                     style: tParagraphMed
                                                         .copyWith(color: grey8),
                                                   )
@@ -259,10 +346,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             ),
                                             const SizedBox(width: 12),
                                             SizedBox(
-                                              width: context.width / 2 -
-                                                  6 -
-                                                  20 -
-                                                  16,
+                                              width: context.width / 2 - 6 - 20 - 16,
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
@@ -276,7 +360,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     height: 4,
                                                   ),
                                                   Text(
-                                                    'poplaura@gmail.com',
+                                                    userDetails['email'],
                                                     style: tParagraphMed
                                                         .copyWith(color: grey8),
                                                   )
@@ -299,7 +383,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               height: 4,
                                             ),
                                             Text(
-                                              'Bucuresti, Sector 4, str. Pacii nr. 54, bl. F2, scara 2, etaj 5, ap. 44, 0308334',
+                                              userDetails['address'] == '' ? '-' : userDetails['address'],
                                               style: tParagraphMed.copyWith(
                                                   color: grey8),
                                             )
@@ -311,10 +395,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             SizedBox(
-                                              width: context.width / 2 -
-                                                  6 -
-                                                  20 -
-                                                  16,
+                                              width: context.width / 2 - 6 - 20 - 16,
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
@@ -328,7 +409,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     height: 4,
                                                   ),
                                                   Text(
-                                                    'October 16th 1999',
+                                                    userDetails['birthday'] == '' ? '-' : userDetails['birthday'],
                                                     style: tParagraphMed
                                                         .copyWith(color: grey8),
                                                   )
@@ -337,10 +418,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             ),
                                             const SizedBox(width: 12),
                                             SizedBox(
-                                              width: context.width / 2 -
-                                                  6 -
-                                                  20 -
-                                                  16,
+                                              width: context.width / 2 - 6 - 20 - 16,
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
@@ -354,7 +432,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     height: 4,
                                                   ),
                                                   Text(
-                                                    'F',
+                                                    userDetails['gender'],
                                                     style: tParagraphMed
                                                         .copyWith(color: grey8),
                                                   )
@@ -369,10 +447,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             SizedBox(
-                                              width: context.width / 2 -
-                                                  6 -
-                                                  20 -
-                                                  16,
+                                              width: context.width / 2 - 6 - 20 - 16,
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
@@ -386,7 +461,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     height: 4,
                                                   ),
                                                   Text(
-                                                    'oily, sensitive, acne prone',
+                                                    skinCond.isEmpty? '-' : skinCond.join(', '),
                                                     style: tParagraphMed
                                                         .copyWith(color: grey8),
                                                   )
@@ -395,16 +470,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             ),
                                             const SizedBox(width: 12),
                                             SizedBox(
-                                              width: context.width / 2 -
-                                                  6 -
-                                                  20 -
-                                                  16,
+                                              width: context.width / 2 - 6 - 20 - 16,
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'Hair type',
+                                                    'Body skin type',
                                                     style: tParagraph.copyWith(
                                                         color: black),
                                                   ),
@@ -412,7 +484,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     height: 4,
                                                   ),
                                                   Text(
-                                                    'curly, dry, dyed, thick, frizzy',
+                                                    bodyCond.isEmpty? '-' : bodyCond.join(', '),
                                                     style: tParagraphMed
                                                         .copyWith(color: grey8),
                                                   )
@@ -427,16 +499,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             SizedBox(
-                                              width: context.width / 2 -
-                                                  6 -
-                                                  20 -
-                                                  16,
+                                              width: context.width / 2 - 6 - 20 - 16,
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'Allergies',
+                                                    'Hair type',
                                                     style: tParagraph.copyWith(
                                                         color: black),
                                                   ),
@@ -444,7 +513,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     height: 4,
                                                   ),
                                                   Text(
-                                                    '-',
+                                                    hairCond.isEmpty? '-' : hairCond.join(', '),
                                                     style: tParagraphMed
                                                         .copyWith(color: grey8),
                                                   )
@@ -453,10 +522,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             ),
                                             const SizedBox(width: 12),
                                             SizedBox(
-                                              width: context.width / 2 -
-                                                  6 -
-                                                  20 -
-                                                  16,
+                                              width: context.width / 2 - 6 - 20 - 16,
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
@@ -470,7 +536,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     height: 4,
                                                   ),
                                                   Text(
-                                                    'floral, fruity, spiced',
+                                                    prefCond.isEmpty? '-' : prefCond.join(', '),
                                                     style: tParagraphMed
                                                         .copyWith(color: grey8),
                                                   )
@@ -479,17 +545,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             )
                                           ],
                                         ),
-                                        const SizedBox(
-                                          height: 20,
+                                        const SizedBox(height: 20,),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Allergies',
+                                              style: tParagraph.copyWith(
+                                                  color: black),
+                                            ),
+                                            const SizedBox(
+                                              height: 4,
+                                            ),
+                                            Text(
+                                              allergies.isEmpty ? '-' : allergies.join(', '),
+                                              style: tParagraphMed.copyWith(
+                                                  color: grey8),
+                                            )
+                                          ],
                                         ),
+                                        const SizedBox(height: 20,),
                                         Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             SizedBox(
-                                                width: context.width / 2 -
-                                                    6 -
-                                                    20 -
-                                                    16,
+                                                width: context.width / 2 - 6 - 20 - 16,
                                                 child: ButtonTypeIcon(
                                                   text: 'Logout',
                                                   icon: CupertinoIcons
@@ -547,10 +628,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               width: 12,
                                             ),
                                             SizedBox(
-                                                width: context.width / 2 -
-                                                    6 -
-                                                    20 -
-                                                    16,
+                                                width: context.width / 2 - 6 - 20 - 16,
                                                 child: ButtonTypeIcon(
                                                     text: 'Edit',
                                                     icon: CupertinoIcons
@@ -564,7 +642,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     )),
                                 const SizedBox(height: 20),
                                 Container(
-                                    padding: const EdgeInsets.all(20),
+                                    padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
                                     decoration: BoxDecoration(
                                       color: white1,
                                       borderRadius: BorderRadius.circular(8),
@@ -593,45 +671,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           )
                                         ],
                                       ),
-                                      const SizedBox(
-                                        height: 20,
-                                      ),
-                                      Row(
-                                        children: [
-                                          Image.asset(
-                                            product,
-                                            height: 20,
+                                      const SizedBox(height: 20),
+                                      Column(children: <Widget>[
+                                        for (var tester in testersOrder)
+                                          Column(
+                                            children: [
+                                              Row(
+                                                children:[
+                                                  Image.asset(product, height: 20),
+                                                  const SizedBox(width: 12,),
+                                                  Text(tester, style: tParagraph.copyWith(color: black))
+                                                ]
+                                              ),
+                                              const SizedBox(height: 20),
+                                            ],
                                           ),
-                                          const SizedBox(
-                                            width: 12,
-                                          ),
-                                          Text(
-                                            'Shampoo',
-                                            style: tParagraph.copyWith(
-                                                color: black),
-                                          )
-                                        ],
+                                        ]
                                       ),
-                                      const SizedBox(
-                                        height: 20,
-                                      ),
-                                      Row(
-                                        children: [
-                                          Image.asset(
-                                            product,
-                                            height: 20,
-                                          ),
-                                          const SizedBox(
-                                            width: 12,
-                                          ),
-                                          Text(
-                                            'Hair Mousse',
-                                            style: tParagraph.copyWith(
-                                                color: black),
-                                          )
-                                        ],
-                                      ),
-                                    ])),
+                                    ]
+                                  )
+                                ),
                                 const SizedBox(height: 20),
                                 Container(
                                   padding: const EdgeInsets.only(bottom: 8),
@@ -640,24 +699,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           bottom: BorderSide(
                                               color: blue7, width: 2))),
                                   child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('Order history',
-                                          style:
-                                              tButton.copyWith(color: blue7)),
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [Text('Order history', style: tButton.copyWith(color: blue7)),
                                       IconButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              expanded = !expanded;
-                                            });
-                                          },
-                                          icon: Icon(
-                                              expanded
-                                                  ? CupertinoIcons.chevron_up
-                                                  : CupertinoIcons.chevron_down,
-                                              color: blue7,
-                                              size: 24))
+                                        onPressed: () {
+                                          setState(() {
+                                            expanded = !expanded;
+                                          });
+                                        },
+                                        icon: Icon(
+                                          expanded
+                                              ? CupertinoIcons.chevron_up
+                                              : CupertinoIcons.chevron_down,
+                                          color: blue7,
+                                          size: 24
+                                        )
+                                      )
                                     ],
                                   ),
                                 ),
@@ -665,15 +722,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   height: 20,
                                 ),
                                 expanded
-                                    ? OrderBox(
-                                        orderNo: '0652493',
-                                        status: 'Shipped',
-                                        orderDate: 'April 17th  2024',
-                                        arivalDate: '-',
-                                        products: _products)
-                                    : const SizedBox(
-                                        height: 20,
-                                      ),
+                                    ? Column(
+                                      children: <Widget>[
+                                        for (var uo in userOrders)
+                                          Column(
+                                            children: [
+                                              OrderBox(
+                                                status: uo['status'],
+                                                totalPrice: uo['price'],
+                                                points: uo['points'],
+                                                orderDate: uo['orderDate'],
+                                                arivalDate: uo['deliveryDate'],
+                                                products: uo['products']
+                                              ),
+                                              const SizedBox(height: 20),
+                                            ],
+                                          ),
+                                      ],
+                                    )
+                                    : const SizedBox(height: 20),
                               ],
                             ))
                       ],
@@ -741,38 +808,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-// ignore: must_be_immutable
 class OrderBox extends StatelessWidget {
-  OrderBox({
+  const OrderBox({
     super.key,
-    required this.orderNo,
     required this.status,
+    required this.totalPrice,
+    required this.points,
     required this.orderDate,
     required this.arivalDate,
     required this.products,
   });
 
-  final String orderNo;
   final String status;
   final String orderDate;
   final String arivalDate;
   final List<Map<String, dynamic>> products;
-
-  double points = 0;
-  double price = 0;
+  final int totalPrice;
+  final int points;
 
   @override
   Widget build(BuildContext context) {
-    // ignore: no_leading_underscores_for_local_identifiers
-    for (var _product in products) {
-      points += _product['price'];
-      price += _product['promotion'] == 0
-          ? (_product['price'])
-          : (_product['promotion'] < 0
-              ? (_product['price'] + _product['promotion'])
-              : (_product['price'] * (100 - _product['promotion']) / 100));
-    }
-
+    final Random random = Random();
     return Container(
       width: context.width,
       margin: const EdgeInsets.only(bottom: 20),
@@ -791,7 +847,7 @@ class OrderBox extends StatelessWidget {
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(
-          'Order $orderNo',
+          'Order ${String.fromCharCodes(Iterable.generate(10, (_) => '0123456789'.codeUnitAt(random.nextInt(10))))}',
           style: tParagraph.copyWith(color: black),
         ),
         const SizedBox(height: 12),
@@ -811,7 +867,7 @@ class OrderBox extends StatelessWidget {
                 width: 78,
                 child:
                     Text('Total:', style: tParagraph.copyWith(color: black))),
-            Text('$price RON', style: tParagraph.copyWith(color: grey8))
+            Text('$totalPrice RON', style: tParagraph.copyWith(color: grey8))
           ],
         ),
         const SizedBox(height: 12),
@@ -836,7 +892,7 @@ class OrderBox extends StatelessWidget {
                 width: 78,
                 child:
                     Text('Ordered:', style: tParagraph.copyWith(color: black))),
-            Text(orderDate, style: tParagraph.copyWith(color: grey8))
+            Text(orderDate.substring(0, 10), style: tParagraph.copyWith(color: grey8))
           ],
         ),
         const SizedBox(height: 12),
@@ -846,7 +902,7 @@ class OrderBox extends StatelessWidget {
                 width: 78,
                 child:
                     Text('Arrived:', style: tParagraph.copyWith(color: black))),
-            Text(arivalDate, style: tParagraph.copyWith(color: grey8))
+            Text(arivalDate == '' ? '-' : arivalDate.substring(0, 10), style: tParagraph.copyWith(color: grey8))
           ],
         ),
         const SizedBox(height: 12),
@@ -856,8 +912,7 @@ class OrderBox extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Column(children: <Widget>[
-          // ignore: no_leading_underscores_for_local_identifiers
-          for (var _product in products)
+          for (var prod in products)
             Column(
               children: [
                 Row(
@@ -871,17 +926,18 @@ class OrderBox extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                            _product['quantity'] > 1
-                                ? '${_product['quantity']} x ${_product['name']}'
-                                : '${_product['name']}',
+                            prod['quantity'] > 1
+                                ? '${prod['quantity']} x ${prod['name']}'
+                                : '${prod['name']}',
                             style: tParagraph.copyWith(color: black))
                       ],
                     ),
                     Text(
-                        _product['quantity'] > 1
-                            ? '${_product['quantity'] * _product['price']} RON'
-                            : '${_product['price']} RON',
-                        style: tParagraph.copyWith(color: grey8)),
+                      prod['isTester'] ? 'Tester'
+                      : prod['quantity'] > 1
+                          ? '${prod['quantity'] * prod['price']} RON'
+                          : '${prod['price']} RON',
+                      style: tParagraph.copyWith(color: grey8)),
                   ],
                 ),
                 const SizedBox(height: 12),

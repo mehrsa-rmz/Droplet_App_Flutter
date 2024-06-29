@@ -48,4 +48,16 @@ class IngredientController extends GetxController {
       return [];
     }
   }
+
+  Future<IngredientModel?> getIngredientById(String id) async {
+    try {
+      final documentSnapshot = await collection.doc(id).get();
+      if (documentSnapshot.exists) {
+        return IngredientModel.fromSnapshot(documentSnapshot);
+      }
+    } catch (e) {
+      print("Error fetching ingredient: $e");
+    }
+    return null;
+  }
 }

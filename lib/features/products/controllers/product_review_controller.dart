@@ -64,4 +64,15 @@ class ProductReviewController extends GetxController {
       return [];
     }
   }
+
+  // Function to check if a user left a review
+  Future<bool> hasUserLeftReview(String userId) async {
+    try {
+      final querySnapshot = await collection.where('customerId', isEqualTo: userId).get();
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      print("Error checking user review: $e");
+      return false;
+    }
+  }
 }

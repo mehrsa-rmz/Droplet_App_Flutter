@@ -89,5 +89,17 @@ class TValidator{
     return null;
   }
 
+  /// Phone Number Validation
+  static String? validatePhoneNumberCanBeNull(String? value){
+    // Regular expression for phone validation
+    final phoneRegExp = RegExp(r'^\d{10}$');
+
+    if (value != null && !phoneRegExp.hasMatch(value)){
+      return "Invalid phone number format (10 digits).";
+    }
+
+    return null;
+  }
+
   // others if needed
 }

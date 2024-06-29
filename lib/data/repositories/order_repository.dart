@@ -29,6 +29,18 @@ class OrderRepository extends GetxController {
     return [];
   }
 
+  Future<OrderModel?> getOrderById(String id) async {
+    try {
+      final documentSnapshot = await  _db.collection('Orders').doc(id).get();
+      if (documentSnapshot.exists) {
+        return OrderModel.fromSnapshot(documentSnapshot);
+      }
+    } catch (e) {
+      print("Error fetching order: $e");
+    }
+    return null;
+  }
+
   /// Store new user order
   Future<void> addOrder(OrderModel order) async {
     try {

@@ -9,7 +9,7 @@ import '../../../utils/exceptions/platform_exceptions.dart';
 
 /// Repository class for appointment-related operations.
 class AppointmentRepository extends GetxController {
-  static AppointmentRepository get instance => Get.find();
+  static AppointmentRepository get instance => Get.put(AppointmentRepository());
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
@@ -147,6 +147,17 @@ class AppointmentRepository extends GetxController {
     } catch (e) {
       print("Error fetching available timeslots: $e");
       return [];
+    }
+  }
+
+  // Function to check if a user went to appointment
+  Future<bool> hasUserBeenToAppointment(String userId) async {
+    try {
+      final querySnapshot = await  _db.collection("Appointments").where('customerId', isEqualTo: userId).get();
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      print("Error checking user appointment: $e");
+      return false;
     }
   }
 }

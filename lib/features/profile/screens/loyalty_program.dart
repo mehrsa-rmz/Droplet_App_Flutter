@@ -9,18 +9,19 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 
 class LoyaltyProgramScreen extends StatefulWidget {
-  const LoyaltyProgramScreen({super.key});
+  const LoyaltyProgramScreen({super.key, required this.points, required this.leftReview, required this.hadAppointment});
+
+  final int points;
+  final bool leftReview;
+  final bool hadAppointment;
 
   @override
   State<LoyaltyProgramScreen> createState() => _LoyaltyProgramScreenState();
 }
 
 class _LoyaltyProgramScreenState extends State<LoyaltyProgramScreen> {
-  double points = 3000;
   bool expanded1 = false;
   bool expanded2 = false;
-  bool leftReview = false;
-  bool hadAppointment = true;
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +76,7 @@ class _LoyaltyProgramScreenState extends State<LoyaltyProgramScreen> {
                     const SizedBox(
                       height: 20,
                     ),
-                    Text('${points.toStringAsFixed(0)} points',
+                    Text('${widget.points.toString()} points',
                         style: h4.copyWith(color: red5),
                         textAlign: TextAlign.center),
                     const SizedBox(
@@ -92,8 +93,8 @@ class _LoyaltyProgramScreenState extends State<LoyaltyProgramScreen> {
                             alignment: Alignment.centerLeft,
                             child: Container(
                                 height: 30,
-                                width: points < 3000
-                                    ? points * context.width / 3000
+                                width: widget.points < 3000
+                                    ? widget.points * context.width / 3000
                                     : context.width,
                                 decoration: BoxDecoration(
                                     gradient: LinearGradient(
@@ -109,25 +110,25 @@ class _LoyaltyProgramScreenState extends State<LoyaltyProgramScreen> {
                       children: [
                         Text('0',
                             style: tMenu.copyWith(
-                                color: points >= 0 ? blue7 : pink5)),
+                                color: widget.points >= 0 ? blue7 : pink5)),
                         Text('500',
                             style: tMenu.copyWith(
-                                color: points >= 500 ? blue7 : pink5)),
+                                color: widget.points >= 500 ? blue7 : pink5)),
                         Text('1K',
                             style: tMenu.copyWith(
-                                color: points >= 1000 ? blue7 : pink5)),
+                                color: widget.points >= 1000 ? blue7 : pink5)),
                         Text('1.5K',
                             style: tMenu.copyWith(
-                                color: points >= 1500 ? blue7 : pink5)),
+                                color: widget.points >= 1500 ? blue7 : pink5)),
                         Text('2K',
                             style: tMenu.copyWith(
-                                color: points >= 2000 ? blue7 : pink5)),
+                                color: widget.points >= 2000 ? blue7 : pink5)),
                         Text('2.5K',
                             style: tMenu.copyWith(
-                                color: points >= 2500 ? blue7 : pink5)),
+                                color: widget.points >= 2500 ? blue7 : pink5)),
                         Text('3K',
                             style: tMenu.copyWith(
-                                color: points >= 3000 ? blue7 : pink5)),
+                                color: widget.points >= 3000 ? blue7 : pink5)),
                       ],
                     ),
                     const SizedBox(
@@ -301,17 +302,17 @@ class _LoyaltyProgramScreenState extends State<LoyaltyProgramScreen> {
                                   type: 'bronze',
                                   title: 'Unlock Bronze Status',
                                   text: 'Reach 1k points',
-                                  completed: points >= 1000),
+                                  completed: widget.points >= 1000),
                               AchievementBox(
                                   type: 'silver',
                                   title: 'Unlock Silver Status',
                                   text: 'Reach 2k points',
-                                  completed: points >= 2000),
+                                  completed: widget.points >= 2000),
                               AchievementBox(
                                   type: 'gold',
                                   title: 'Unlock Gold Status',
                                   text: 'Reach 3k points',
-                                  completed: points >= 3000),
+                                  completed: widget.points >= 3000),
                               const AchievementBox(
                                   type: 'basic',
                                   title: 'Become a member',
@@ -322,13 +323,13 @@ class _LoyaltyProgramScreenState extends State<LoyaltyProgramScreen> {
                                   title: 'Leave a review',
                                   text:
                                       '50 points for the first product review',
-                                  completed: leftReview),
+                                  completed: widget.leftReview),
                               AchievementBox(
                                   type: 'basic',
                                   title: 'Go to a consultation',
                                   text:
                                       '50 points for the first consultation with one of our specialists',
-                                  completed: hadAppointment)
+                                  completed: widget.hadAppointment)
                             ],
                           )
                         : const SizedBox(

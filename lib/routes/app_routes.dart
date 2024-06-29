@@ -25,7 +25,6 @@ import 'package:flutter_application/features/products/screens/personal_rec.dart'
 import 'package:flutter_application/features/products/screens/product_categories.dart';
 import 'package:flutter_application/features/products/screens/products.dart';
 import 'package:flutter_application/features/profile/screens/edit_profile.dart';
-import 'package:flutter_application/features/profile/screens/loyalty_program.dart';
 import 'package:flutter_application/features/profile/screens/profile.dart';
 import 'package:flutter_application/features/stores_map/screens/stores_map.dart';
 import 'package:get/get_navigation/src/routes/get_route.dart';
@@ -62,7 +61,7 @@ class AppRoutes {
     //Profile
     GetPage(name: '/profile', page: () => const ProfileScreen()),
     GetPage(name: '/edit', page: () => const EditProfileScreen()),
-    GetPage(name: '/loyalty_program', page: () => const LoyaltyProgramScreen()),
+    //GetPage(name: '/loyalty_program', page: () => const LoyaltyProgramScreen()),
     //Favorites
     GetPage(name: '/favorites', page: () => const FavoritesScreen()),
     //Cart

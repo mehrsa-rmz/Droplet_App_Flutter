@@ -75,4 +75,27 @@ class UserAllergyController extends GetxController {
     }
     return null;
   }
+
+  Future<List<UserAllergyModel>> fetchUserAllergiesForUserId(String userId) async {
+    try {
+      final querySnapshot = await collection
+          .where('customerId', isEqualTo: userId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        List<UserAllergyModel> allergies = await Future.wait(
+          querySnapshot.docs.map((doc) async {
+            return await UserAllergyModel.fromSnapshot(doc);
+          }).toList()
+        );
+        userAllergies.assignAll(allergies);
+        return allergies;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error fetching allergies: $e");
+      return [];
+    }
+  }
 }

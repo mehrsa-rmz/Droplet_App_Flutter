@@ -4,6 +4,7 @@ import 'package:flutter_application/utils/constants/text_styles.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
 import 'package:get/get.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
+import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 // Custom widget for input
@@ -28,7 +29,7 @@ class InputType extends StatefulWidget {
     //required this.action,
     //required this.onSubmitted
   });
-  final TextEditingController? controller;
+  TextEditingController? controller;
   final FormFieldValidator<String?>? validator;
   //final GlobalKey<MultiSelect>? multiSelectKey;
   final String type;
@@ -49,7 +50,7 @@ class InputType extends StatefulWidget {
 }
 
 class _InputTypeState extends State<InputType> {
-  List<DateTime?> _dates = [DateTime.now().add(const Duration(days: 1))];
+  List<DateTime?> _dates = [DateTime.now()];
   
   @override
   Widget build(BuildContext context) {
@@ -221,10 +222,6 @@ class _InputTypeState extends State<InputType> {
                             cursorErrorColor: red5,
                             maxLines: 1,
                             style: tParagraph.copyWith(color: black),
-                            // controller: TextEditingController(
-                            //     text: DateFormat('dd MMMM yyyy')
-                            //         .format(_dates[0]!)),
-                            // TODO
                             decoration: InputDecoration(
                               border: UnderlineInputBorder(
                                   borderSide:
@@ -285,6 +282,8 @@ class _InputTypeState extends State<InputType> {
                                                   onValueChanged: (dates) => {
                                                     setState(() {
                                                       _dates = dates;
+                                                      var date = dates[0];
+                                                      if(date != null) widget.controller!.text = DateFormat('dd-MM-yyyy').format(date);
                                                     })
                                                   },
                                                   onCancelTapped: () =>
@@ -335,8 +334,7 @@ class _InputTypeState extends State<InputType> {
                                       borderRadius: BorderRadius.circular(100)),
                                   selectedChipColor: blue4ltrans,
                                   textStyle: tParagraph.copyWith(color: grey8),
-                                  selectedTextStyle:
-                                      tParagraph.copyWith(color: black),
+                                  selectedTextStyle:tParagraph.copyWith(color: black),
                                   onTap: (values) {
                                     selectedItems = values;
                                   },

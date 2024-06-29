@@ -80,4 +80,27 @@ class UserConditionController extends GetxController {
     }
     return null;
   }
+
+  Future<List<UserConditionModel>> fetchUserConditionForUserId(String userId) async {
+    try {
+      final querySnapshot = await collection
+          .where('customerId', isEqualTo: userId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        List<UserConditionModel> conditions = await Future.wait(
+          querySnapshot.docs.map((doc) async {
+            return await UserConditionModel.fromSnapshot(doc);
+          }).toList()
+        );
+        userConditions.assignAll(conditions);
+        return conditions;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error fetching conditions: $e");
+      return [];
+    }
+  }
 }
