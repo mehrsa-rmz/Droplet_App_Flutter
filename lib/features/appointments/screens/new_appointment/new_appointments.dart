@@ -1,14 +1,21 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/features/appointments/controllers/specialist_controller.dart';
+import 'package:flutter_application/features/appointments/controllers/specialist_review_controller.dart';
+import 'package:flutter_application/features/appointments/models/specialist_model.dart';
+import 'package:flutter_application/features/appointments/models/specialist_review_model.dart';
 import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments_pick_specialist.dart';
 import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments_pick_type.dart';
 import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments_specialist_reviews.dart';
+import 'package:flutter_application/features/profile/models/user_model.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
 import 'package:flutter_application/common/widgets/buttons.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
 import 'package:flutter_application/utils/constants/text_styles.dart';
 import 'package:flutter_application/common/widgets/inputs.dart';
 import 'package:flutter_application/common/widgets/navbar.dart';
+import 'package:flutter_application/utils/popups/loaders.dart';
 import 'package:get/get.dart';
 
 class NewAppointmentsScreen extends StatefulWidget {
@@ -20,44 +27,67 @@ class NewAppointmentsScreen extends StatefulWidget {
 
 class _NewAppointmentsScreenState extends State<NewAppointmentsScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final List<Map<String, dynamic>> _specialists = [
-    {
-      'name': 'Pop Laura',
-      'position': 'Dermatology Specialist',
-      'rating': 4.85,
-      'years': 4,
-      'location': 'Droplet - Afi Palace Mall',
-      'image': specialist1
-    },
-    {
-      'name': 'Moise Andreea',
-      'position': 'Dermatology Specialist',
-      'rating': 4.65,
-      'years': 2,
-      'location': 'Droplet - Mega Mall',
-      'image': specialist2
-    },
-    {
-      'name': 'Ionescu Ana',
-      'position': 'Dermatology Specialist',
-      'rating': 4.90,
-      'years': 7,
-      'location': 'Droplet - ParkLake Mall',
-      'image': specialist3
-    },
-  ];
-  late List<Map<String, dynamic>> _filteredSpecialists;
+
+  User? user = FirebaseAuth.instance.currentUser;
+  UserModel? userModel;
+
+  List<Map<String, dynamic>> allSpecialists = [];
+  List<Map<String, dynamic>> _filteredSpecialists = [];
+
+  TextEditingController locationController = TextEditingController();
+
 
   @override
   void initState() {
     super.initState();
-    _filteredSpecialists = _specialists;
+    fetchSpecialistsData().then((_) {
+      setState(() {
+        _filterSpecialists();
+      });
+    });
     _searchController.addListener(_filterSpecialists);
   }
 
-  void _filterSpecialists() {
+  Future<void> fetchSpecialistsData() async {
+    List<SpecialistModel> specialistModels = await SpecialistController.instance.fetchAllSpecialists();
+    List<SpecialistReviewModel> specialistReviews = await SpecialistReviewController.instance.fetchAllSpecialistsReviews();
+
+    // Creating a map for specialist reviews
+    Map<String, List<SpecialistReviewModel>> specialistReviewMap = {};
+    for (var sr in specialistReviews) {
+      if (!specialistReviewMap.containsKey(sr.specialistId)) {
+        specialistReviewMap[sr.specialistId] = [];
+      }
+      specialistReviewMap[sr.specialistId]!.add(sr);
+    }
+
+    // Combining the data into the desired structure
+    allSpecialists = specialistModels.map((specialist) {
+      String specialistId = specialist.id;
+
+      // Calculating reviews
+      List<SpecialistReviewModel> reviews = specialistReviewMap[specialistId] ?? [];
+      double rating = reviews.isNotEmpty
+          ? reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviews.length
+          : 0.0;
+
+      return {
+        'id': specialistId,
+        'name': specialist.name,
+        'position': specialist.title,
+        'rating': rating,
+        'years': specialist.noYearsExperience,
+        'location': specialist.location,
+        'image': specialist2,
+      };
+    }).toList();
+
+    _filteredSpecialists = allSpecialists;
+  }
+
+  void _filterSpecialists(){
     setState(() {
-      _filteredSpecialists = _specialists
+      _filteredSpecialists = allSpecialists
           .where((specialist) => specialist['name']
               .toLowerCase()
               .contains(_searchController.text.toLowerCase()))
@@ -156,7 +186,7 @@ class _NewAppointmentsScreenState extends State<NewAppointmentsScreen> {
                             icon: CupertinoIcons.chevron_right,
                             color: blue7,
                             type: 'primary',
-                            onPressed: () => Get.to(() => const NewAppointmentsPickSpecialistScreen()),
+                            onPressed: () => Get.to(() => const NewAppointmentsPickSpecialistScreen(location: 'online')),
                           ),
                         ),
                         const SizedBox(height: 40),
@@ -189,32 +219,33 @@ class _NewAppointmentsScreenState extends State<NewAppointmentsScreen> {
                               ],
                             ),
                             child: InputType(
+                              controller: locationController,
                               type: 'dropdown',
                               inputType: TextInputType.text,
                               placeholder: 'Location',
                               mustBeFilled: true,
                               dropdownList: const [
                                 DropdownMenuEntry(
-                                    value: 1, label: 'Droplet - Mega Mall'),
+                                    value: 1, label: 'Mega Mall'),
                                 DropdownMenuEntry(
-                                    value: 2, label: 'Droplet - Baneasa Mall'),
+                                    value: 2, label: 'Baneasa Mall'),
                                 DropdownMenuEntry(
                                     value: 3,
-                                    label: 'Droplet - AFI Palace Mall'),
+                                    label: 'AFI Palace Mall'),
                                 DropdownMenuEntry(
                                     value: 4,
-                                    label: 'Droplet - Plaza Romania Mall'),
+                                    label: 'Plaza Romania Mall'),
                                 DropdownMenuEntry(
                                     value: 5,
-                                    label: 'Droplet - Unirii Shopping Center'),
+                                    label: 'Unirii Shopping Center'),
                                 DropdownMenuEntry(
-                                    value: 6, label: 'Droplet - ParkLake Mall'),
+                                    value: 6, label: 'ParkLake Mall'),
                                 DropdownMenuEntry(
                                     value: 7,
-                                    label: 'Droplet - Sun Plaza Mall'),
+                                    label: 'Sun Plaza Mall'),
                                 DropdownMenuEntry(
                                     value: 8,
-                                    label: 'Droplet - Promenada Mall'),
+                                    label: 'Promenada Mall'),
                               ],
                               dropdownWidth: context.width - 32,
                             )),
@@ -236,7 +267,13 @@ class _NewAppointmentsScreenState extends State<NewAppointmentsScreen> {
                             icon: CupertinoIcons.chevron_right,
                             color: blue7,
                             type: 'primary',
-                            onPressed: () => Get.to(() => const NewAppointmentsPickSpecialistScreen()),
+                            onPressed: () =>  {
+                              if(locationController.text != '') {
+                                Get.to(() => NewAppointmentsPickSpecialistScreen(location: locationController.text)),
+                              } else {
+                                TLoaders.errorSnackBar(title: 'Error', message: 'Location not picked.')
+                              }
+                            }
                           ),
                         ),
                         const SizedBox(height: 40),
@@ -283,12 +320,13 @@ class _NewAppointmentsScreenState extends State<NewAppointmentsScreen> {
                                   Column(
                                     children: [
                                       SpecialistBox(
-                                          name: specialist['name'],
-                                          position: specialist['position'],
-                                          rating: specialist['rating'],
-                                          years: specialist['years'],
-                                          location: specialist['location'],
-                                          image: specialist['image']),
+                                        id: specialist['id'],
+                                        name: specialist['name'],
+                                        position: specialist['position'],
+                                        rating: specialist['rating'],
+                                        years: specialist['years'],
+                                        location: specialist['location'],
+                                        image: specialist['image']),
                                       const SizedBox(height: 20)
                                     ],
                                   )
@@ -309,6 +347,7 @@ class _NewAppointmentsScreenState extends State<NewAppointmentsScreen> {
 class SpecialistBox extends StatelessWidget {
   const SpecialistBox({
     super.key,
+    required this.id,
     required this.name,
     required this.position,
     required this.rating,
@@ -317,6 +356,7 @@ class SpecialistBox extends StatelessWidget {
     required this.image,
   });
 
+  final String id;
   final String name;
   final String position;
   final double rating;
@@ -428,7 +468,7 @@ class SpecialistBox extends StatelessWidget {
                         text: 'Reviews',
                         color: pink5,
                         type: "primary",
-                        onPressed: () => Get.to(() => const NewAppointmentsReviewsScreen()))),
+                        onPressed: () => Get.to(() => NewAppointmentsReviewsScreen(specialistId: id)))),
                 const SizedBox(
                   width: 12,
                 ),
@@ -439,7 +479,7 @@ class SpecialistBox extends StatelessWidget {
                         text: 'Next step',
                         color: blue7,
                         type: "primary",
-                        onPressed: () => Get.to(() => const NewAppointmentsPickTypeScreen())))
+                        onPressed: () => Get.to(() => NewAppointmentsPickTypeScreen(specialistId: id))))
               ],
             )
           ],

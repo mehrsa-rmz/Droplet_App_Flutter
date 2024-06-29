@@ -80,6 +80,7 @@ class _HypoallergenicScreenState extends State<HypoallergenicScreen> {
   }
 
   Future<void> fetchAndCombineData() async {
+    // TODO: move these in the repositories
     // Fetching future data
     List<ProductConditionModel> productConditions = await ProductConditionController.instance.fetchAllProductConditions();
     List<ProductIngredientModel> productIngredients = await ProductIngredientController.instance.fetchAllProductIngredients();

@@ -44,11 +44,12 @@ class ProductsScreen extends StatefulWidget {
 class _ProductsScreenState extends State<ProductsScreen> {
   User? user = FirebaseAuth.instance.currentUser;
   UserModel? userModel;
+
   List<Map<String, dynamic>> allProducts = [];
+  List<Map<String, dynamic>> _filteredProducts = [];
 
   final TextEditingController _searchController = TextEditingController();
-
-  List<Map<String, dynamic>> _filteredProducts = [];
+  
   String sex = 'all';
   String age = 'all';
   List<String> conditions = [];

@@ -1,5 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/features/appointments/controllers/specialist_controller.dart';
+import 'package:flutter_application/features/appointments/controllers/specialist_review_controller.dart';
+import 'package:flutter_application/features/appointments/models/specialist_model.dart';
+import 'package:flutter_application/features/appointments/models/specialist_review_model.dart';
+import 'package:flutter_application/features/profile/controllers/user_controller.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
 import 'package:flutter_application/utils/constants/text_styles.dart';
@@ -7,16 +12,62 @@ import 'package:flutter_application/common/widgets/navbar.dart';
 import 'package:get/get.dart';
 
 class NewAppointmentsReviewsScreen extends StatefulWidget {
-  const NewAppointmentsReviewsScreen({super.key});
+  const NewAppointmentsReviewsScreen({super.key, required this.specialistId});
+
+  final String specialistId;
 
   @override
   State<NewAppointmentsReviewsScreen> createState() =>
       _NewAppointmentsReviewsScreenState();
 }
 
-class _NewAppointmentsReviewsScreenState
-    extends State<NewAppointmentsReviewsScreen> {
-  double value = 0;
+class _NewAppointmentsReviewsScreenState extends State<NewAppointmentsReviewsScreen> {
+  SpecialistModel? specialistModel;
+  List<Map<String, dynamic>> currentSpecialistReviewsMap = [];
+  Map<String, dynamic> currentSpecialist = {
+    'id': '',
+    'name': '',
+    'position': '',
+    'rating': 0.0,
+    'years': 0,
+    'location': '',
+    'image': specialist2,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    fetchSpecialistData().then((_) {setState(() {});});
+  }
+
+  Future<void> fetchSpecialistData() async {
+    List<SpecialistReviewModel> specialistReviews = await SpecialistReviewController.instance.fetchSpecialistReviews(widget.specialistId);
+    SpecialistModel? thisSpecialist = await SpecialistController.instance.getSpecialistById(widget.specialistId);
+
+    // Calculating reviews
+    double rating = 0.0;
+    for (var sr in specialistReviews) {
+      rating += sr.rating;
+      currentSpecialistReviewsMap.add({
+        'userName': await UserController.fetchUserNameById(sr.userId),
+        'rating': sr.rating,
+        'dateTime': sr.dateTime,
+        'message': sr.message!
+      });
+    }
+    rating /= specialistReviews.length;
+
+    currentSpecialist = {
+      'id': widget.specialistId,
+      'name': thisSpecialist?.name ?? '',
+      'position': thisSpecialist?.title ?? '',
+      'rating': rating,
+      'years': thisSpecialist?.noYearsExperience ?? 0,
+      'location': thisSpecialist?.location ?? '',
+      'image': specialist2,
+    };
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -68,13 +119,13 @@ class _NewAppointmentsReviewsScreenState
                     Column(
                       children: [
                         const SizedBox(height: 32),
-                        const SpecialistBox(
-                            name: 'Pop Laura',
-                            position: 'Dermatology Specialist',
-                            rating: 4.85,
-                            years: 4,
-                            location: 'Droplet - Afi Palace Mall',
-                            image: specialist1),
+                        SpecialistBox(
+                          name: currentSpecialist['name'],
+                          position: currentSpecialist['position'],
+                          rating: currentSpecialist['rating'],
+                          years: currentSpecialist['years'],
+                          location: currentSpecialist['location'],
+                          image: currentSpecialist['image']),
                         const SizedBox(height: 24),
                         Container(
                           width: context.width,
@@ -92,12 +143,13 @@ class _NewAppointmentsReviewsScreenState
                           ),
                         ),
                         const SizedBox(height: 20),
-                        const ReviewBox(
-                            name: 'Ana G.',
-                            rating: 3.5,
-                            date: 'February 26th 2024',
-                            review:
-                                'This is a general review message to fill this space.'),
+                        Wrap(
+                          spacing: 20,
+                          children: <Widget>[
+                            for (var sr in currentSpecialistReviewsMap)
+                              ReviewBox(name: sr['userName'], rating: sr['rating'], date: sr['dateTime'], review: sr['message'])
+                          ]
+                        )
                       ],
                     ),
                   ],

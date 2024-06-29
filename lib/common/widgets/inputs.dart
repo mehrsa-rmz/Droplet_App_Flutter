@@ -26,12 +26,10 @@ class InputType extends StatefulWidget {
     this.dropdownWidth,
     this.calendarStart,
     this.calendarEnd,
-    //required this.action,
-    //required this.onSubmitted
+    //this.onChanged 
   });
   TextEditingController? controller;
   final FormFieldValidator<String?>? validator;
-  //final GlobalKey<MultiSelect>? multiSelectKey;
   final String type;
   final TextInputType inputType;
   final String placeholder;
@@ -42,8 +40,7 @@ class InputType extends StatefulWidget {
   double? dropdownWidth;
   DateTime? calendarStart;
   DateTime? calendarEnd;
-  //final TextInputAction action;
-  //final void Function(String) onSubmitted;
+  //void Function(String)? onChanged;
 
   @override
   State<InputType> createState() => _InputTypeState();
@@ -144,52 +141,47 @@ class _InputTypeState extends State<InputType> {
                 ))
             : widget.type == "dropdown"
                 ? DropdownMenu(
-                    controller: widget.controller,
-                    width: widget.dropdownWidth,
-                    label: Text(widget.placeholder),
-                    enableFilter: true,
-                    requestFocusOnTap: true,
-                    textStyle: tParagraph.copyWith(color: black),
-                    inputDecorationTheme: InputDecorationTheme(
-                      border: UnderlineInputBorder(
-                          borderSide: BorderSide(color: blue7, width: 1)),
-                      focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: blue7, width: 2)),
-                      labelStyle: tInput.copyWith(color: blue7),
-                      floatingLabelStyle: tInputSmall.copyWith(color: blue7),
-                      filled: true,
-                      fillColor: offwhite1,
-                      focusColor: grey2,
-                      contentPadding: const EdgeInsets.all(8),
-                      alignLabelWithHint: false,
-                      errorMaxLines: 2,
-                      errorStyle: tInput.copyWith(color: red5),
-                      errorBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: red5, width: 1)),
-                      focusedErrorBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: red5, width: 2)),
-                    ),
-                    trailingIcon: Icon(CupertinoIcons.chevron_down,
-                        color: blue7, size: 20),
-                    selectedTrailingIcon:
-                        Icon(CupertinoIcons.chevron_up, color: blue7, size: 20),
-                    //menuStyle: MenuStyle(
-                    //  backgroundColor:,
-                    //),
-                    dropdownMenuEntries: widget.dropdownList,
-                  )
+                  controller: widget.controller,
+                  width: widget.dropdownWidth,
+                  label: Text(widget.placeholder),
+                  enableFilter: true,
+                  requestFocusOnTap: true,
+                  textStyle: tParagraph.copyWith(color: black),
+                  inputDecorationTheme: InputDecorationTheme(
+                    border: UnderlineInputBorder(
+                        borderSide: BorderSide(color: blue7, width: 1)),
+                    focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: blue7, width: 2)),
+                    labelStyle: tInput.copyWith(color: blue7),
+                    floatingLabelStyle: tInputSmall.copyWith(color: blue7),
+                    filled: true,
+                    fillColor: offwhite1,
+                    focusColor: grey2,
+                    contentPadding: const EdgeInsets.all(8),
+                    alignLabelWithHint: false,
+                    errorMaxLines: 2,
+                    errorStyle: tInput.copyWith(color: red5),
+                    errorBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: red5, width: 1)),
+                    focusedErrorBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: red5, width: 2)),
+                  ),
+                  trailingIcon: Icon(CupertinoIcons.chevron_down,
+                      color: blue7, size: 20),
+                  selectedTrailingIcon:
+                      Icon(CupertinoIcons.chevron_up, color: blue7, size: 20),
+                  dropdownMenuEntries: widget.dropdownList,
+                )
                 : widget.type == "text-area"
                     ? TextFormField(
                         controller: widget.controller,
                         validator: widget.validator ?? (value) {return null;},
                         keyboardType: TextInputType.multiline,
-                        //textInputAction: action,
                         obscureText: false,
                         showCursor: true,
                         cursorColor: red5,
                         cursorErrorColor: red5,
                         maxLines: null,
-                        //onSubmitted: onSubmitted,
                         style: tParagraph.copyWith(color: black),
                         decoration: InputDecoration(
                           border: UnderlineInputBorder(
@@ -214,6 +206,7 @@ class _InputTypeState extends State<InputType> {
                         ))
                     : widget.type == "calendar"
                         ? TextFormField(
+                            //onChanged: widget.onChanged,
                             controller: widget.controller,
                             validator: widget.validator ?? (value) {return null;},
                             keyboardType: TextInputType.datetime,

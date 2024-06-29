@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/features/appointments/screens/future_appointments.dart';
+import 'package:flutter_application/features/explore/screens/explore.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
 import 'package:flutter_application/common/widgets/buttons.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
@@ -44,7 +45,7 @@ class NewAppointmentsSuccessScreen extends StatelessWidget {
                         IconButton(
                           icon: Icon(CupertinoIcons.chevron_left,
                               color: red5, size: 32),
-                          onPressed: () => Get.back(),
+                          onPressed: () => Get.offAll(() => const ExploreScreen()),
                         ),
                         Text('New appointment',
                             style: h4.copyWith(color: red5)),
@@ -96,7 +97,7 @@ class NewAppointmentsSuccessScreen extends StatelessWidget {
                           text: 'See appointment',
                           color: blue7,
                           type: 'secondary',
-                          onPressed: () => Get.to(() => const FutureAppointmentsScreen()),
+                          onPressed: () => Get.offAll(() => const FutureAppointmentsScreen()),
                         ),
                       ],
                     )),

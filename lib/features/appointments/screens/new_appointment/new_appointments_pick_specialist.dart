@@ -1,7 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments_pick_type.dart';
+import 'package:flutter_application/features/appointments/controllers/specialist_controller.dart';
+import 'package:flutter_application/features/appointments/controllers/specialist_review_controller.dart';
+import 'package:flutter_application/features/appointments/models/specialist_model.dart';
+import 'package:flutter_application/features/appointments/models/specialist_review_model.dart';
+import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments_pick_time.dart';
 import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments_specialist_reviews.dart';
+import 'package:flutter_application/features/profile/models/user_model.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
 import 'package:flutter_application/common/widgets/buttons.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
@@ -11,58 +17,86 @@ import 'package:flutter_application/common/widgets/navbar.dart';
 import 'package:get/get.dart';
 
 class NewAppointmentsPickSpecialistScreen extends StatefulWidget {
-  const NewAppointmentsPickSpecialistScreen({super.key});
+  const NewAppointmentsPickSpecialistScreen({super.key, required this.location});
+
+  final String location;
 
   @override
   State<NewAppointmentsPickSpecialistScreen> createState() =>
       _NewAppointmentsPickSpecialistScreenState();
 }
 
-class _NewAppointmentsPickSpecialistScreenState
-    extends State<NewAppointmentsPickSpecialistScreen> {
+class _NewAppointmentsPickSpecialistScreenState extends State<NewAppointmentsPickSpecialistScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final List<Map<String, dynamic>> _specialists = [
-    {
-      'name': 'Pop Laura',
-      'position': 'Dermatology Specialist',
-      'rating': 4.85,
-      'years': 4,
-      'location': 'Droplet - Afi Palace Mall',
-      'image': specialist1
-    },
-    {
-      'name': 'Moise Andreea',
-      'position': 'Dermatology Specialist',
-      'rating': 4.65,
-      'years': 2,
-      'location': 'Droplet - Mega Mall',
-      'image': specialist2
-    },
-    {
-      'name': 'Ionescu Ana',
-      'position': 'Dermatology Specialist',
-      'rating': 4.90,
-      'years': 7,
-      'location': 'Droplet - ParkLake Mall',
-      'image': specialist3
-    },
-  ];
-  late List<Map<String, dynamic>> _filteredSpecialists;
+
+  User? user = FirebaseAuth.instance.currentUser;
+  UserModel? userModel;
+
+  List<Map<String, dynamic>> allSpecialists = [];
+  List<Map<String, dynamic>> _filteredSpecialists = [];
+
+  TextEditingController locationController = TextEditingController();
+
 
   @override
   void initState() {
     super.initState();
-    _filteredSpecialists = _specialists;
+    fetchSpecialistsData().then((_) {
+      setState(() {
+        _filterSpecialists();
+      });
+    });
     _searchController.addListener(_filterSpecialists);
   }
 
-  void _filterSpecialists() {
+  Future<void> fetchSpecialistsData() async {
+    List<SpecialistModel> specialistModels = await SpecialistController.instance.fetchAllSpecialists();
+    List<SpecialistReviewModel> specialistReviews = await SpecialistReviewController.instance.fetchAllSpecialistsReviews();
+
+    // Creating a map for specialist reviews
+    Map<String, List<SpecialistReviewModel>> specialistReviewMap = {};
+    for (var sr in specialistReviews) {
+      if (!specialistReviewMap.containsKey(sr.specialistId)) {
+        specialistReviewMap[sr.specialistId] = [];
+      }
+      specialistReviewMap[sr.specialistId]!.add(sr);
+    }
+
+    // Combining the data into the desired structure
+    allSpecialists = specialistModels.map((specialist) {
+      String specialistId = specialist.id;
+
+      // Calculating reviews
+      List<SpecialistReviewModel> reviews = specialistReviewMap[specialistId] ?? [];
+      double rating = reviews.isNotEmpty
+          ? reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviews.length
+          : 0.0;
+
+      return {
+        'id': specialistId,
+        'name': specialist.name,
+        'position': specialist.title,
+        'rating': rating,
+        'years': specialist.noYearsExperience,
+        'location': specialist.location,
+        'image': specialist2,
+      };
+    }).toList();
+
+    _filteredSpecialists = allSpecialists;
+  }
+
+  void _filterSpecialists(){
     setState(() {
-      _filteredSpecialists = _specialists
-          .where((specialist) => specialist['name']
-              .toLowerCase()
-              .contains(_searchController.text.toLowerCase()))
-          .toList();
+      _filteredSpecialists = allSpecialists.where((specialist) {
+        bool matchesLocation =
+            widget.location == 'online' ? true : specialist['location'] == widget.location;
+        bool matchesSearch = specialist['name']
+            .toLowerCase()
+            .contains(_searchController.text.toLowerCase());
+        
+        return matchesLocation &&matchesSearch;
+      }).toList();
     });
   }
 
@@ -167,12 +201,14 @@ class _NewAppointmentsPickSpecialistScreenState
                                   Column(
                                     children: [
                                       SpecialistBox(
-                                          name: specialist['name'],
-                                          position: specialist['position'],
-                                          rating: specialist['rating'],
-                                          years: specialist['years'],
-                                          location: specialist['location'],
-                                          image: specialist['image']),
+                                        id: specialist['id'],
+                                        name: specialist['name'],
+                                        position: specialist['position'],
+                                        rating: specialist['rating'],
+                                        years: specialist['years'],
+                                        location: specialist['location'],
+                                        givenLocation: widget.location,
+                                        image: specialist['image']),
                                       const SizedBox(height: 20)
                                     ],
                                   )
@@ -193,19 +229,23 @@ class _NewAppointmentsPickSpecialistScreenState
 class SpecialistBox extends StatelessWidget {
   const SpecialistBox({
     super.key,
+    required this.id,
     required this.name,
     required this.position,
     required this.rating,
     required this.years,
     required this.location,
+    required this.givenLocation,
     required this.image,
   });
 
+  final String id;
   final String name;
   final String position;
   final double rating;
   final int years;
   final String location;
+  final String givenLocation;
   final String image;
 
   @override
@@ -306,24 +346,24 @@ class SpecialistBox extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox(
-                    width: context.width / 2 - 6 - 20 - 16,
-                    child: ButtonTypeIcon(
-                        icon: CupertinoIcons.star,
-                        text: 'Reviews',
-                        color: pink5,
-                        type: "primary",
-                        onPressed: () => Get.to(() => const NewAppointmentsReviewsScreen()))),
+                  width: context.width / 2 - 6 - 20 - 16,
+                  child: ButtonTypeIcon(
+                    icon: CupertinoIcons.star,
+                    text: 'Reviews',
+                    color: pink5,
+                    type: "primary",
+                    onPressed: () => Get.to(() => NewAppointmentsReviewsScreen(specialistId: id)))),
                 const SizedBox(
                   width: 12,
                 ),
                 SizedBox(
-                    width: context.width / 2 - 6 - 20 - 16,
-                    child: ButtonTypeIcon(
-                        icon: CupertinoIcons.chevron_right,
-                        text: 'Next step',
-                        color: blue7,
-                        type: "primary",
-                        onPressed: () => Get.to(() => const NewAppointmentsPickTypeScreen())))
+                  width: context.width / 2 - 6 - 20 - 16,
+                  child: ButtonTypeIcon(
+                    icon: CupertinoIcons.chevron_right,
+                    text: 'Next step',
+                    color: blue7,
+                    type: "primary",
+                    onPressed: () => Get.to(() => NewAppointmentsPickTimeScreen(specialistId: id, location: givenLocation,))))
               ],
             )
           ],

@@ -1,5 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/data/repositories/appointments_repository.dart';
+import 'package:flutter_application/features/appointments/controllers/specialist_controller.dart';
+import 'package:flutter_application/features/appointments/controllers/specialist_review_controller.dart';
+import 'package:flutter_application/features/appointments/models/appointment_model.dart';
+import 'package:flutter_application/features/appointments/models/specialist_model.dart';
+import 'package:flutter_application/features/appointments/models/specialist_review_model.dart';
 import 'package:flutter_application/features/appointments/screens/appointments_history.dart';
 import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments_success.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
@@ -8,10 +15,108 @@ import 'package:flutter_application/utils/constants/colors.dart';
 import 'package:flutter_application/utils/constants/text_styles.dart';
 import 'package:flutter_application/common/widgets/inputs.dart';
 import 'package:flutter_application/common/widgets/navbar.dart';
+import 'package:flutter_application/utils/popups/loaders.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
-class NewAppointmentsPickTimeScreen extends StatelessWidget {
-  const NewAppointmentsPickTimeScreen({super.key});
+class NewAppointmentsPickTimeScreen extends StatefulWidget {
+  const NewAppointmentsPickTimeScreen({super.key, required this.specialistId, required this.location});
+
+  final String specialistId;
+  final String location;
+
+  @override
+  State<NewAppointmentsPickTimeScreen> createState() => _NewAppointmentsPickTimeScreenState();
+}
+
+class _NewAppointmentsPickTimeScreenState extends State<NewAppointmentsPickTimeScreen> {
+  User? user = FirebaseAuth.instance.currentUser;
+  
+  TextEditingController dateController = TextEditingController();
+  TextEditingController timeController = TextEditingController();
+
+  SpecialistModel? specialistModel;
+  Map<String, dynamic> currentSpecialist = {
+    'id': '',
+    'name': '',
+    'position': '',
+    'rating': 0.0,
+    'years': 0,
+    'location': '',
+    'image': specialist2,
+  };
+
+  List<DropdownMenuEntry> timeSlots = [
+    const DropdownMenuEntry(value: 0, label: '12:00'), 
+    //const DropdownMenuEntry(value: 1, label: '12:30'), 
+    const DropdownMenuEntry(value: 2, label: '13:00'), 
+    //const DropdownMenuEntry(value: 3, label: '13:30'), 
+    const DropdownMenuEntry(value: 4, label: '14:00'), 
+    //const DropdownMenuEntry(value: 5, label: '14:30'), 
+    const DropdownMenuEntry(value: 6, label: '15:00'), 
+    //const DropdownMenuEntry(value: 7, label: '15:30'), 
+    const DropdownMenuEntry(value: 8, label: '16:00'), 
+    //const DropdownMenuEntry(value: 9, label: '16:30'), 
+    const DropdownMenuEntry(value: 10, label: '17:00'), 
+    //const DropdownMenuEntry(value: 11, label: '17:30'), 
+    const DropdownMenuEntry(value: 12, label: '18:00')
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    //fetchAvailableTimeslots(dateController.text);
+    fetchSpecialistData().then((_) {setState(() {});});
+  }
+
+  Future<void> fetchSpecialistData() async {
+    List<SpecialistReviewModel> specialistReviews = await SpecialistReviewController.instance.fetchSpecialistReviews(widget.specialistId);
+    SpecialistModel? thisSpecialist = await SpecialistController.instance.getSpecialistById(widget.specialistId);
+
+    // Calculating reviews
+    double rating = 0.0;
+    for (var sr in specialistReviews) {
+      rating += sr.rating;
+    }
+    rating /= specialistReviews.length;
+
+    currentSpecialist = {
+      'id': widget.specialistId,
+      'name': thisSpecialist?.name ?? '',
+      'position': thisSpecialist?.title ?? '',
+      'rating': rating,
+      'years': thisSpecialist?.noYearsExperience ?? 0,
+      'location': thisSpecialist?.location ?? '',
+      'image': specialist2,
+    };
+  }
+
+  // Future<void> fetchAvailableTimeslots(String date) async {
+  //   if (date.isNotEmpty) {
+  //     DateTime datePicked = DateFormat('dd-MM-yyyy').parse(date);
+  //     List<String> availableTimes = await AppointmentRepository.instance.fetchAvailableTimeslots(datePicked, widget.specialistId);
+  //     setState(() {
+  //       timeSlots = availableTimes.map((time) => DropdownMenuEntry(value: time, label: time)).toList();
+  //     });
+  //   }
+  // }
+
+  Future<void> createAppointment(String date, String time) async {
+    print('Here');
+    String dateTimeString = '$date $time';
+    print('dateTimeString: $dateTimeString');
+    DateTime dateTime = DateFormat('dd-MM-yyyy HH:mm').parse(dateTimeString);
+    dateTimeString = DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
+    print('dateTimeString: $dateTimeString');
+
+    if (user != null) {
+      print('Here 2');
+      String userId = user!.uid;
+      AppointmentModel newApp = AppointmentModel(id: 'APP_${widget.specialistId}_${userId}_$dateTimeString', userId: userId, specialistId: widget.specialistId, dateTime: dateTimeString, location: widget.location);
+      print('newapp: ${newApp.dateTime} ${newApp.location} ${newApp.userId} ${newApp.specialistId}');
+      await AppointmentRepository.instance.saveAppointmentRecord(newApp);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,13 +169,13 @@ class NewAppointmentsPickTimeScreen extends StatelessWidget {
                     Column(
                       children: [
                         const SizedBox(height: 32),
-                        const SpecialistBox(
-                            name: 'Pop Laura',
-                            position: 'Dermatology Specialist',
-                            rating: 4.85,
-                            years: 4,
-                            location: 'Droplet - Afi Palace Mall',
-                            image: specialist1),
+                        SpecialistBox(
+                          name: currentSpecialist['name'],
+                          position: currentSpecialist['position'],
+                          rating: currentSpecialist['rating'],
+                          years: currentSpecialist['years'],
+                          location: currentSpecialist['location'],
+                          image: currentSpecialist['image']),
                         const SizedBox(height: 24),
                         Container(
                           width: context.width,
@@ -89,34 +194,47 @@ class NewAppointmentsPickTimeScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
                         InputType(
-                            type: 'calendar',
-                            inputType: TextInputType.text,
-                            placeholder: 'Day',
-                            mustBeFilled: true,
-                            ),
+                          controller: dateController,
+                          calendarStart: DateTime.now(),
+                          calendarEnd: DateTime(2026),
+                          type: 'calendar',
+                          inputType: TextInputType.text,
+                          placeholder: 'Day',
+                          mustBeFilled: true,
+                          // onChanged: (value) async {
+                          //   await fetchAvailableTimeslots(value);
+                          //   setState(() {});
+                          // },
+                        ),
                         const SizedBox(height: 20),
                         InputType(
+                          controller: timeController,
                           type: 'dropdown',
                           inputType: TextInputType.text,
                           placeholder: 'Time',
                           mustBeFilled: true,
                           dropdownWidth: context.width - 32,
-                          dropdownList: const [
-                            DropdownMenuEntry(value: 1, label: '10:00'),
-                            DropdownMenuEntry(value: 2, label: '12:00'),
-                            DropdownMenuEntry(value: 3, label: '15:00')
-                          ],
+                          dropdownList: timeSlots
                         ),
                         const SizedBox(height: 20),
                         Row(
                           children: [
                             SizedBox(
-                                width: context.width / 2 - 6 - 16,
-                                child: ButtonType(
-                                    text: 'Book',
-                                    color: blue7,
-                                    type: 'primary',
-                                    onPressed: () => Get.to(() => const NewAppointmentsSuccessScreen()))),
+                              width: context.width / 2 - 6 - 16,
+                              child: ButtonType(
+                                text: 'Book',
+                                color: blue7,
+                                type: 'primary',
+                                onPressed: () async => {
+                                  if(dateController.text != '' && timeController.text != '') {
+                                    await createAppointment(dateController.text, timeController.text),
+                                    Get.to(() => const NewAppointmentsSuccessScreen()),
+                                  } else {
+                                    TLoaders.errorSnackBar(title: 'Error', message: 'Must pick date and time.')
+                                  }
+                                }
+                              )
+                            ),
                             const SizedBox(width: 12),
                             SizedBox(
                               width: context.width / 2 - 6 - 16,
@@ -161,26 +279,20 @@ class NewAppointmentsPickTimeScreen extends StatelessWidget {
                                             const SizedBox(height: 24),
                                             Row(children: [
                                               SizedBox(
-                                                  width: context.width / 2 -
-                                                      6 -
-                                                      40,
+                                                  width: context.width / 2 - 6 - 40,
                                                   child: ButtonType(
                                                       text: 'Yes, cancel',
                                                       color: red5,
                                                       type: "primary",
-                                                      onPressed: () => Get.to(() => const AppointmentsHistoryScreen()))),
+                                                      onPressed: () => Get.offAll(() => const AppointmentsHistoryScreen()))),
                                               const SizedBox(width: 12),
                                               SizedBox(
-                                                  width: context.width / 2 -
-                                                      6 -
-                                                      40,
+                                                  width: context.width / 2 - 6 - 40,
                                                   child: ButtonType(
                                                       text: 'No, keep',
                                                       color: blue7,
                                                       type: "secondary",
-                                                      onPressed: () =>
-                                                          Navigator.of(context)
-                                                              .pop()))
+                                                      onPressed: () => Navigator.of(context).pop()))
                                             ]),
                                           ],
                                         ),

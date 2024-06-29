@@ -64,4 +64,20 @@ class SpecialistReviewController extends GetxController {
       return [];
     }
   }
+
+  Future<List<SpecialistReviewModel>> fetchSpecialistReviews(String id) async {
+    final querySnapshot = await collection
+        .where('specialistId', isEqualTo: id)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      List<SpecialistReviewModel> reviews = await Future.wait(
+        querySnapshot.docs.map((doc) async {
+          return await SpecialistReviewModel.fromSnapshot(doc);
+        }).toList()
+      );
+      return reviews;
+    }
+    return [];
+  }
 }

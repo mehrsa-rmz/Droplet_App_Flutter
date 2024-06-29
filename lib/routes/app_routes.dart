@@ -1,10 +1,6 @@
 import 'package:flutter_application/features/appointments/screens/appointments_history.dart';
 import 'package:flutter_application/features/appointments/screens/future_appointments.dart';
 import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments.dart';
-import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments_pick_specialist.dart';
-import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments_pick_time.dart';
-import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments_pick_type.dart';
-import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments_specialist_reviews.dart';
 import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments_success.dart';
 import 'package:flutter_application/features/articles/screens/articles.dart';
 import 'package:flutter_application/features/articles/screens/opened_article.dart';
@@ -42,10 +38,10 @@ class AppRoutes {
     GetPage(name: '/appointments_history', page: () => const AppointmentsHistoryScreen()),
     GetPage(name: '/future_appointments', page: () => const FutureAppointmentsScreen()),
     GetPage(name: '/new_appointment', page: () => const NewAppointmentsScreen()),
-    GetPage(name: '/specialist_reviews', page: () => const NewAppointmentsReviewsScreen()),
-    GetPage(name: '/pick_appointment_specialist', page: () => const NewAppointmentsPickSpecialistScreen()),
-    GetPage(name: '/pick_appointment_type', page: () => const NewAppointmentsPickTypeScreen()),
-    GetPage(name: '/pick_appointment_time', page: () => const NewAppointmentsPickTimeScreen()),
+    // GetPage(name: '/specialist_reviews', page: () => const NewAppointmentsReviewsScreen()),
+    // GetPage(name: '/pick_appointment_specialist', page: () => const NewAppointmentsPickSpecialistScreen()),
+    // GetPage(name: '/pick_appointment_type', page: () => const NewAppointmentsPickTypeScreen()),
+    // GetPage(name: '/pick_appointment_time', page: () => const NewAppointmentsPickTimeScreen()),
     GetPage(name: '/appointment_success', page: () => const NewAppointmentsSuccessScreen()),
     GetPage(name: '/customer_support', page: () => const CustomerSupportScreen()),
     GetPage(name: '/personal_recommendations', page: () => const PersonalRecScreen()),

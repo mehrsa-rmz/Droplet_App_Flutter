@@ -61,7 +61,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   int inCart = 0;
   bool testerAdded = false;
-  bool testerLimitReached = false;
+  bool testerLimitReached = false; // TODO
   bool expanded1 = false;
   bool expanded2 = false;
   bool expanded3 = false;
@@ -126,14 +126,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         productReviewMap[pr.productId] = [];
         productReviewMap[pr.productId]!.add(pr);
         if(pr.productId == widget.currentProductId) {
-          currentProductReviewsMap.add(
-          {
+          currentProductReviewsMap.add({
             'userName': await UserController.fetchUserNameById(pr.userId),
             'rating': pr.rating,
             'dateTime': pr.dateTime,
             'message': pr.message!
-          }
-        );
+          });
         }
       }
     }

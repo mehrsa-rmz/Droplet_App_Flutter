@@ -17,15 +17,11 @@ class AppointmentRepository extends GetxController {
   /// Function to save appointment data to Firestore.
   Future<void> saveAppointmentRecord(AppointmentModel appointment) async {
     try {
-      await _db.collection("Appointments").doc(appointment.id).set(appointment.toJson());
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
+      print("Adding appointment: ${appointment.toJson()}"); // Debug statement
+      await _db.collection("Appointments").add(appointment.toJson());
+      print("Favorite added successfully");
     } catch (e) {
-      throw 'Something went wrong. Please try again';
+      print("Error adding favorite: $e");
     }
   }
 
@@ -50,17 +46,23 @@ class AppointmentRepository extends GetxController {
   }
 
   /// Function to update appointment data in Firestore.
-  Future<void> updateAppointmentDetails(AppointmentModel updatedAppointment) async {
+  Future<void> updateAppointmentDetails(String id, AppointmentModel updatedAppointment) async {
     try {
-      await _db.collection("Appointments").doc(updatedAppointment.id).update(updatedAppointment.toJson());
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
+      print("Updating app: ${updatedAppointment.toJson()}"); // Debug statement
+      await _db.collection("Appointments").doc(id).update(updatedAppointment.toJson());
+      print("App updated successfully");
     } catch (e) {
-      throw 'Something went wrong. Please try again';
+      print("App updating favorite: $e");
+    }
+  }
+
+  Future<void> deleteAppointment(String id) async {
+    try {
+      print("Deleting app with ID: $id"); // Debug statement
+      await _db.collection("Appointments").doc(id).delete();
+      print("App deleted successfully");
+    } catch (e) {
+      print("Error deleting app: $e");
     }
   }
 

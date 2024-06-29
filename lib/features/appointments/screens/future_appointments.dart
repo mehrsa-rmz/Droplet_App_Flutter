@@ -1,14 +1,23 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/data/repositories/appointments_repository.dart';
+import 'package:flutter_application/features/appointments/controllers/specialist_controller.dart';
+import 'package:flutter_application/features/appointments/models/appointment_model.dart';
+import 'package:flutter_application/features/appointments/models/specialist_model.dart';
 import 'package:flutter_application/features/appointments/screens/appointments_history.dart';
 import 'package:flutter_application/features/appointments/screens/new_appointment/new_appointments.dart';
+import 'package:flutter_application/features/explore/screens/explore.dart';
+import 'package:flutter_application/features/profile/models/user_model.dart';
 import 'package:flutter_application/utils/constants/asset_strings.dart';
 import 'package:flutter_application/common/widgets/buttons.dart';
 import 'package:flutter_application/utils/constants/colors.dart';
 import 'package:flutter_application/utils/constants/text_styles.dart';
 import 'package:flutter_application/common/widgets/inputs.dart';
 import 'package:flutter_application/common/widgets/navbar.dart';
+import 'package:flutter_application/utils/popups/loaders.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class FutureAppointmentsScreen extends StatefulWidget {
   const FutureAppointmentsScreen({super.key});
@@ -20,6 +29,42 @@ class FutureAppointmentsScreen extends StatefulWidget {
 
 class _FutureAppointmentsScreenState extends State<FutureAppointmentsScreen> {
   double value = 0;
+  User? user = FirebaseAuth.instance.currentUser;
+  UserModel? userModel;
+
+  int newReviewRating = 0;
+  TextEditingController newReviewController = TextEditingController();
+
+
+  List<Map<String, dynamic>> futureApps = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAppData().then((_) {setState(() {});});
+  }
+
+  Future<void> fetchAppData() async {
+    if (user != null) {
+      String userId = user!.uid;
+      List<AppointmentModel> appModels = await AppointmentRepository.instance.fetchUserFutureAppointments(userId);
+
+      for(var app in appModels) {
+        SpecialistModel? thisSpecialist = await SpecialistController.instance.getSpecialistById(app.specialistId);
+        futureApps.add({
+          'id': app.id ?? '',
+          'specialistId': app.specialistId,
+          'userId': app.userId,
+          'specialistName': thisSpecialist?.name ?? '',
+          'position': thisSpecialist?.title ?? '',
+          'specialistImage': specialist2,
+          'dateTime': app.dateTime,
+          'location': app.location,
+        });
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +99,7 @@ class _FutureAppointmentsScreenState extends State<FutureAppointmentsScreen> {
                         IconButton(
                           icon: Icon(CupertinoIcons.chevron_left,
                               color: red5, size: 32),
-                          onPressed: () => Get.back(),
+                          onPressed: () => Get.offAll(() => const ExploreScreen()),
                         ),
                         Text('Appointments', style: h4.copyWith(color: red5)),
                         const SizedBox(width: 32),
@@ -137,12 +182,14 @@ class _FutureAppointmentsScreenState extends State<FutureAppointmentsScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const SpecialistBox(
-                            name: 'Pop Laura',
-                            position: 'Dermatology Specialist',
-                            date: 'May 30th 2023\n13:30',
-                            location: 'Droplet - Afi Palace Mall',
-                            image: specialist1),
+                        Wrap(
+                                spacing: 20,
+                                runSpacing: 20,
+                                children: <Widget>[
+                                  for (var oa in futureApps)
+                                    SpecialistBox(aid: oa['id'], uid: oa['userId'], id: oa['specialistId'], name: oa['specialistName'], date: oa['dateTime'], location: oa['location'], position: oa['position'], image: specialist2,)
+                                ]
+                              )
                       ],
                     ),
                   ],
@@ -159,6 +206,9 @@ class _FutureAppointmentsScreenState extends State<FutureAppointmentsScreen> {
 class SpecialistBox extends StatelessWidget {
   const SpecialistBox({
     super.key,
+    required this.aid,
+    required this.uid,
+    required this.id,
     required this.name,
     required this.position,
     required this.date,
@@ -166,6 +216,9 @@ class SpecialistBox extends StatelessWidget {
     required this.image,
   });
 
+  final String aid;
+  final String uid;
+  final String id;
   final String name;
   final String position;
   final String date;
@@ -174,6 +227,23 @@ class SpecialistBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController dateController = TextEditingController();
+    TextEditingController timeController = TextEditingController();
+
+    Future<void> updateAppointment(String date, String time, String specialistId, String location) async {
+      String dateTimeString = '$date $time';
+      DateTime dateTime = DateFormat('dd-MM-yyyy HH:mm').parse(dateTimeString);
+      dateTimeString = DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
+
+      AppointmentModel updApp = AppointmentModel(id: aid, userId: uid, specialistId: specialistId, dateTime: dateTimeString, location: location);
+      print('newapp: ${updApp.dateTime} ${updApp.location} ${updApp.userId} ${updApp.specialistId}');
+      await AppointmentRepository.instance.updateAppointmentDetails(aid, updApp);
+    }
+
+    Future<void> deleteAppointment(String id) async {
+      await AppointmentRepository.instance.deleteAppointment(id);
+    }
+
     return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -297,6 +367,9 @@ class SpecialistBox extends StatelessWidget {
                                       style: tParagraph.copyWith(color: grey8)),
                                   const SizedBox(height: 24),
                                   InputType(
+                                      controller: dateController,
+                                      calendarStart: DateTime.now(),
+                                      calendarEnd: DateTime(2026),
                                       type: 'calendar',
                                       inputType: TextInputType.text,
                                       placeholder: 'Day',
@@ -306,6 +379,7 @@ class SpecialistBox extends StatelessWidget {
                                     height: 24,
                                   ),
                                   InputType(
+                                    controller: timeController,
                                     type: 'dropdown',
                                     inputType: TextInputType.text,
                                     placeholder: 'Time',
@@ -336,8 +410,16 @@ class SpecialistBox extends StatelessWidget {
                                             text: 'Save',
                                             color: blue7,
                                             type: "primary",
-                                            onPressed: () =>
-                                                Navigator.of(context).pop())),
+                                            onPressed: () async => {
+                                              if(dateController.text != '' && timeController.text != '') {
+                                                await updateAppointment(dateController.text, timeController.text, id, location),
+                                                Navigator.of(context).pop(),
+                                                TLoaders.successSnackBar(title: 'Success', message: 'Appointment was rescheduled')
+                                              } else {
+                                                TLoaders.errorSnackBar(title: 'Error', message: 'Must pick date and time.')
+                                              }
+                                            }
+                                          )),
                                     const SizedBox(width: 12),
                                     SizedBox(
                                         width: context.width / 2 - 6 - 40,
@@ -345,8 +427,10 @@ class SpecialistBox extends StatelessWidget {
                                             text: 'Cancel',
                                             color: red5,
                                             type: "secondary",
-                                            onPressed: () =>
-                                                Navigator.of(context).pop()))
+                                            onPressed: () => {
+                                              Navigator.of(context).pop(),
+                                            }
+                                          ))
                                   ]),
                                 ],
                               ),
@@ -400,8 +484,10 @@ class SpecialistBox extends StatelessWidget {
                                             text: 'Yes, cancel',
                                             color: red5,
                                             type: "primary",
-                                            onPressed: () =>
-                                                Navigator.of(context).pop())),
+                                            onPressed: () async =>{
+                                              await deleteAppointment(aid),
+                                              Navigator.of(context).pop()}
+                                            )),
                                     const SizedBox(width: 12),
                                     SizedBox(
                                         width: context.width / 2 - 6 - 40,
